@@ -1,0 +1,7 @@
+/terraform.tfvars
+/.idea/
+/.terraform/
+terraform.tfstate*
+bootcamp-rails.iml
+/source-activemq-networkrail-TRAIN_MVT_EA_TOC-01.json
+/.envrc
