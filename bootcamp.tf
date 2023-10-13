@@ -3,7 +3,7 @@ terraform {
   required_providers {
     confluent = {
       source  = "confluentinc/confluent"
-      version = "1.51.0"
+      version = "1.54.0"
     }
   }
 }
@@ -17,6 +17,3 @@ resource "confluent_environment" "stream_bootcamp" {
   display_name = var.confluent_environment
 }
 
-locals {
-  env_id = confluent_environment.stream_bootcamp.id
-}

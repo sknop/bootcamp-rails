@@ -7,7 +7,7 @@ resource "confluent_service_account" "app-ksql" {
 resource "confluent_role_binding" "app-ksql-kafka-cluster-admin" {
   principal   = "User:${confluent_service_account.app-ksql.id}"
   role_name   = "CloudClusterAdmin"
-  crn_pattern = confluent_kafka_cluster.bootcamp-cluster.rbac_crn
+  crn_pattern = confluent_kafka_cluster.bootcamp.rbac_crn
 }
 
 resource "confluent_role_binding" "app-ksql-schema-registry-resource-owner" {
@@ -20,7 +20,7 @@ resource "confluent_ksql_cluster" "bootcamp" {
   display_name = "bootcamp"
   csu          = 1
   kafka_cluster {
-    id = confluent_kafka_cluster.bootcamp-cluster.id
+    id = confluent_kafka_cluster.bootcamp.id
   }
   credential_identity {
     id = confluent_service_account.app-ksql.id
