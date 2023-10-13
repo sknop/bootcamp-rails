@@ -1,13 +1,13 @@
 output "bootcamp-cluster" {
-  value = confluent_kafka_cluster.bootcamp-cluster
+  value = confluent_kafka_cluster.bootcamp
 }
 
-output "API-Key" {
-  value = local.api_key
+output "app-manager-api-key" {
+  value = confluent_api_key.app-manager-kafka-api-key.id
 }
 
-output "API-Secret" {
-  value = local.secret
+output "app-manager-api-secret" {
+  value = confluent_api_key.app-manager-kafka-api-key.secret
   sensitive = true
 }
 
