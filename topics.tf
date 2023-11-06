@@ -23,8 +23,7 @@ resource "confluent_kafka_topic" "CIF_FULL_DAILY" {
   topic_name       = "CIF_FULL_DAILY"
   partitions_count = 1
   rest_endpoint    = confluent_kafka_cluster.bootcamp.rest_endpoint
-  config = {
-  }
+
   credentials {
     key    = confluent_api_key.app-manager-kafka-api-key.id
     secret = confluent_api_key.app-manager-kafka-api-key.secret
