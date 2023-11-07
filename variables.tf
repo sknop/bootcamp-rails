@@ -32,3 +32,12 @@ variable "confluent_env_id" {
   type    = string
   default = ""
 }
+
+variable "confluent_custom_connection_endpoints" {
+  type = string
+  default = ""
+}
+
+variable "cif_total_http_url" {
+  type = string
+}

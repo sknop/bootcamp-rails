@@ -72,3 +72,36 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
     confluent_kafka_acl.app-connector-write-on-target-topic,
   ]
 }
+
+resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_TOTAL"
+    "connector.class" = "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_total_http_url
+    "topic" = confluent_kafka_topic.CIF_FULL_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+}
