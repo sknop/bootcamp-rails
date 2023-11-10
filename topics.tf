@@ -29,3 +29,23 @@ resource "confluent_kafka_topic" "CIF_FULL_DAILY" {
     secret = confluent_api_key.app-manager-kafka-api-key.secret
   }
 }
+
+resource "confluent_kafka_topic" "LOCATIONS" {
+  kafka_cluster  {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+
+  topic_name       = "LOCATIONS"
+  partitions_count = 1
+  rest_endpoint    = confluent_kafka_cluster.bootcamp.rest_endpoint
+
+  credentials {
+    key    = confluent_api_key.app-manager-kafka-api-key.id
+    secret = confluent_api_key.app-manager-kafka-api-key.secret
+  }
+
+  config = {
+    "cleanup.policy" = "compact"
+  }
+}
+
