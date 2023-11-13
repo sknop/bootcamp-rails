@@ -1,5 +1,5 @@
 output "bootcamp-cluster" {
-  value = confluent_kafka_cluster.bootcamp
+  value = confluent_kafka_cluster.bootcamp.bootstrap_endpoint
 }
 
 output "app-manager-api-key" {

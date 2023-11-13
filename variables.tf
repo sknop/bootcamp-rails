@@ -28,6 +28,10 @@ variable "confluent_environment" {
   type = string
 }
 
+variable "confluent_cluster" {
+  type = string
+}
+
 variable "confluent_env_id" {
   type    = string
   default = ""
