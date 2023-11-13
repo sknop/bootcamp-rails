@@ -1,6 +1,6 @@
 
 resource "confluent_kafka_cluster" "bootcamp" {
-  display_name = "bootcamp"
+  display_name = var.confluent_cluster
   availability = "SINGLE_ZONE"
   cloud        = "AWS"
   region       = var.confluent_region
