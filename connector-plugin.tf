@@ -3,7 +3,7 @@ resource "confluent_custom_connector_plugin" "http-compressed-source" {
   connector_class             = "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
   connector_type              = "SOURCE"
   sensitive_config_properties = [ "http.user", "http.password" ]
-  filename                    = "HttpCompressedSourceConnector-1.0.0.jar"
+  filename                    = "lib/HttpCompressedSourceConnector-1.0.0.jar"
 
   # This is a bit of a hack - there is a bug in the Confluent Terraform provider that causes Terraform to reapply
   # the sensitive_config_properties, causing an error when rerunning "terraform apply"
