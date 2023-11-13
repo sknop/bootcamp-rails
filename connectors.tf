@@ -98,7 +98,7 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
     "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
     "http.url" = var.cif_total_http_url
     "topic" = confluent_kafka_topic.CIF_FULL_DAILY.topic_name
-    "page.size.lines" = "5000"
+    "page.size.lines" = "1000"
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
