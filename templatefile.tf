@@ -16,4 +16,5 @@ resource "local_file" "ccloud-properties" {
     schema_api_secret = confluent_api_key.bootcamp-schema-registry-api-key.secret
   })
   filename = var.ccloud-properties
+  file_permission = "0644"
 }
