@@ -49,11 +49,11 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
     id = confluent_kafka_cluster.bootcamp.id
   }
   config_sensitive = {
-    "activemq.username" = var.nrod_username
     "activemq.password" = var.nrod_password
   }
   config_nonsensitive = {
     "connector.class" = "ActiveMQSource"
+    "activemq.username" = var.nrod_username
     "name" = "NETWORKRAIL_TRAIN_MVT_ALL_TOC"
     "kafka.auth.mode" = "SERVICE_ACCOUNT"
     "kafka.service.account.id" = confluent_service_account.app-connector.id
@@ -98,7 +98,7 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
     "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
     "http.url" = var.cif_total_http_url
     "topic" = confluent_kafka_topic.CIF_FULL_DAILY.topic_name
-    "page.size.lines" = "1000"
+    "page.size.lines" = "5000"
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
