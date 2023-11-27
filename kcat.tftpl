@@ -1,0 +1,9 @@
+# Required connection configs for Kafka producer, consumer, and admin
+bootstrap.servers=${bootstrap_server}
+security.protocol=SASL_SSL
+sasl.mechanisms=PLAIN
+sasl.username=${api_key}
+sasl.password=${api_secret}
+schema.registry.url=https://${schema_api_key}:${schema_api_secret}@${schema_registry_url}
+# Best practice for higher availability in librdkafka clients prior to 1.7
+session.timeout.ms=45000
