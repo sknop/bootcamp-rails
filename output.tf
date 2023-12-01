@@ -2,6 +2,14 @@ output "bootcamp-cluster" {
   value = confluent_kafka_cluster.bootcamp.bootstrap_endpoint
 }
 
+output "schema-registry" {
+  value = confluent_schema_registry_cluster.essentials.rest_endpoint
+}
+
+output "ksql-server" {
+  value = confluent_ksql_cluster.bootcamp.rest_endpoint
+}
+
 output "app-manager-api-key" {
   value = confluent_api_key.app-manager-kafka-api-key.id
 }

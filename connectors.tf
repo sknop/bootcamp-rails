@@ -60,11 +60,8 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
     "activemq.url" = "tcp://datafeeds.networkrail.co.uk:61619"
     "jms.destination.type" = "topic"
     "jms.destination.name" = "TRAIN_MVT_ALL_TOC"
-    "output.data.format" = "JSON"
+    "output.data.format" = "AVRO"
     "kafka.topic" = confluent_kafka_topic.NETWORKRAIL_TRAIN_MVT.topic_name
-    "transforms" = "extractText"
-    "transforms.extractText.type": "org.apache.kafka.connect.transforms.ExtractField$Value"
-    "transforms.extractText.field": "text"
     "tasks.max" = "1"
   }
   depends_on = [

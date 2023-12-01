@@ -1,0 +1,182 @@
+CREATE STREAM NETWORKRAIL_TRAIN_MVT_MQ_SOURCE 
+  WITH (KAFKA_TOPIC='NETWORKRAIL_TRAIN_MVT', VALUE_FORMAT='AVRO');
+
+CREATE STREAM NETWORKRAIL_TRAIN_MVT_JSON_STG
+  WITH (KEY_FORMAT  ='AVRO',
+        VALUE_FORMAT='KAFKA',
+        KAFKA_TOPIC='NETWORKRAIL_TRAIN_MVT_JSON_STG',
+        PARTITIONS=1) AS
+  SELECT '{"MSG_ARRAY":' + TEXT + '}'
+    FROM NETWORKRAIL_TRAIN_MVT_MQ_SOURCE;
+
+-- The header is common across message types
+-- but the body fields depends on the type of message
+CREATE STREAM NETWORKRAIL_TRAIN_MVT_PAYLOAD 
+  (MSG_ARRAY array<struct<header struct< msg_type VARCHAR, source_dev_id VARCHAR, user_id VARCHAR, original_data_source VARCHAR, msg_queue_timestamp VARCHAR, source_system_id VARCHAR >,
+                          body varchar>>)
+  WITH (KAFKA_TOPIC='NETWORKRAIL_TRAIN_MVT_JSON_STG',
+        KEY_FORMAT='AVRO',
+        VALUE_FORMAT='JSON');
+
+CREATE STREAM NETWORKRAIL_TRAIN_MVT_X 
+  WITH (FORMAT='AVRO', PARTITIONS=6) AS
+  SELECT ROWKEY, 
+         EXPLODE(MSG_ARRAY)->HEADER AS HEADER, 
+         EXPLODE(MSG_ARRAY)->BODY AS BODY
+    FROM NETWORKRAIL_TRAIN_MVT_PAYLOAD;
+
+-- Create a stream of movements (type=0003) first for optimisation 
+-- reasons so that non-movement records are not processed in the subsequent joins
+CREATE STREAM TRAIN_MOVEMENTS_00 AS 
+SELECT MVT.HEADER AS MSG_HEADER, 
+       EXTRACTJSONFIELD(MVT.BODY,'$.event_type') as event_type,
+       EXTRACTJSONFIELD(MVT.BODY,'$.gbtt_timestamp')  as gbtt_timestamp,
+       EXTRACTJSONFIELD(MVT.BODY,'$.original_loc_stanox') as original_loc_stanox,
+       EXTRACTJSONFIELD(MVT.BODY,'$.planned_timestamp')  as planned_timestamp,
+       CAST(EXTRACTJSONFIELD(MVT.BODY,'$.timetable_variation') AS INT) AS TIMETABLE_VARIATION,
+       EXTRACTJSONFIELD(MVT.BODY,'$.original_loc_timestamp')  as original_loc_timestamp,
+       EXTRACTJSONFIELD(MVT.BODY,'$.current_train_id') as current_train_id,
+       EXTRACTJSONFIELD(MVT.BODY,'$.delay_monitoring_point') as delay_monitoring_point,
+       EXTRACTJSONFIELD(MVT.BODY,'$.next_report_run_time') as next_report_run_time,
+       EXTRACTJSONFIELD(MVT.BODY,'$.reporting_stanox') as reporting_stanox,
+       CAST(EXTRACTJSONFIELD(MVT.BODY,'$.actual_timestamp') AS BIGINT) as actual_timestamp,
+       EXTRACTJSONFIELD(MVT.BODY,'$.correction_ind') as correction_ind,
+       EXTRACTJSONFIELD(MVT.BODY,'$.event_source') as event_source,
+       EXTRACTJSONFIELD(MVT.BODY,'$.train_file_address') as train_file_address,
+       CASE WHEN LEN(EXTRACTJSONFIELD(MVT.BODY,'$.platform'))> 0 THEN 'Platform' + EXTRACTJSONFIELD(MVT.BODY,'$.platform')
+             ELSE '' 
+          END AS PLATFORM,
+       EXTRACTJSONFIELD(MVT.BODY,'$.division_code') as division_code,
+       EXTRACTJSONFIELD(MVT.BODY,'$.train_terminated') as train_terminated,
+       EXTRACTJSONFIELD(MVT.BODY,'$.train_id') as train_id,
+       EXTRACTJSONFIELD(MVT.BODY,'$.offroute_ind') as offroute_ind,
+       CASE WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status') = 'ON TIME' THEN 'ON TIME' 
+             WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status') = 'LATE' THEN EXTRACTJSONFIELD(MVT.BODY,'$.timetable_variation') + ' MINS LATE' 
+             WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status')='EARLY' THEN EXTRACTJSONFIELD(MVT.BODY,'$.timetable_variation') + ' MINS EARLY' 
+        END AS VARIATION,
+       CASE WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status') = 'ON TIME' THEN 0
+             WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status') = 'LATE' THEN 1
+             WHEN EXTRACTJSONFIELD(MVT.BODY,'$.variation_status')='EARLY' THEN 0
+        END AS LATE_IND,
+       EXTRACTJSONFIELD(MVT.BODY,'$.variation_status') as variation_status,
+       EXTRACTJSONFIELD(MVT.BODY,'$.train_service_code') as train_service_code,
+       EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') as toc_id,
+         CASE
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '2' THEN 'JSD Rail Research & Development'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '3' THEN 'Victa Westlink Rail (defunct)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '4' THEN 'DB Cargo Charters'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '5' THEN 'DB Cargo Freight'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '6' THEN 'Eurostar'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '7' THEN 'Rail Operations Group'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '8' THEN 'DB Cargo International'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '9' THEN 'Freightliner Intermodal'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '10' THEN 'Serco Rail Operations'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '11' THEN 'Freightliner Heavy Haul'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '12' THEN 'Freight Europe (defunct)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '12' THEN 'Grand Union Trains'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '13' THEN 'Europorte Channel'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '14' THEN 'Alliance Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '14' THEN 'Grand Central (North West)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '15' THEN 'Network Rail (On-Track Machines)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '16' THEN 'LORAM'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '17' THEN 'Hanson & Hall Rail Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '18' THEN 'Swanage Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '19' THEN 'South Yorkshire Supertram'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '20' THEN 'TransPennine Express'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '21' THEN 'Greater Anglia'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '22' THEN 'Grand Central'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '23' THEN 'Northern Trains'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '24' THEN 'Heathrow Connect'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '25' THEN 'Great Western Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '26' THEN 'Unmapped (was First Capital Connect)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '27' THEN 'CrossCountry'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '28' THEN 'East Midlands Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '29' THEN 'West Midlands Trains'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '30' THEN 'London Overground'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '31' THEN 'Network Rail Virtual Freight Company'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '32' THEN 'Wrexham and Shropshire (defunct)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '33' THEN 'Elizabeth line'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '34' THEN 'DC Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '35' THEN 'Caledonian Sleeper'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '36' THEN 'Vintage Trains'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '37' THEN 'Seco Rail (defunct)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '38' THEN 'Carillion Rail CTRL (Phase 1) (defunct)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '39' THEN 'Harsco'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '40' THEN 'Balfour Beatty Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '41' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '42' THEN 'Colas Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '43' THEN 'Amey Fleet Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '44' THEN 'Carillion Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '45' THEN 'Lumo'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '46' THEN 'SB (Swietelsky Babcock) Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '47' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '48' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '49' THEN 'VolkerRail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '50' THEN 'West Coast Railways'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '51' THEN 'North Yorkshire Moors Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '52' THEN 'Pre Metro Operations'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '53' THEN 'SNCF Freight Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '54' THEN 'GB Railfreight'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '55' THEN 'Hull Trains'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '56' THEN 'Nexus (Tyne & Wear Metro)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '57' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '58' THEN 'Unmapped (was Advenza Freight)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '59' THEN 'On Route Logistics'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '60' THEN 'ScotRail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '61' THEN 'London North Eastern Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '62' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '63' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '64' THEN 'Merseyrail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '65' THEN 'Avanti West Coast'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '66' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '67' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '68' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '69' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '70' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '71' THEN 'Transport for Wales'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '72' THEN 'Legge Infrastructure Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '73' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '74' THEN 'Chiltern Railways'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '75' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '76' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '77' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '78' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '79' THEN 'c2c'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '80' THEN 'Southeastern'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '81' THEN 'Unmapped (was Gatwick Express)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '82' THEN 'Unmapped (was Southern)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '83' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '84' THEN 'South Western Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '85' THEN 'Island Lines'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '86' THEN 'Heathrow Express'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '87' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Govia Thameslink Railway (Great Northern)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Govia Thameslink Railway (Thameslink)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Southern'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '89' THEN 'Locomotive Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '90' THEN 'LUL District Line - Wimbledon'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '91' THEN 'LUL Bakerloo Line'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '92' THEN 'Network Rail Reserved Pathings (non-QJ)'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '93' THEN 'LUL District Line - Richmond'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '94' THEN 'Ffestiniog Railway'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '95' THEN 'Varamis Rail'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '96' THEN 'Unmapped'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '97' THEN 'Direct Rail Services'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '98' THEN 'Internal Testing'
+            WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '11' THEN 'SLC Operations'
+            ELSE '<unknown TOC code: ' + EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') + '>'
+        END AS TOC,
+       EXTRACTJSONFIELD(MVT.BODY,'$.loc_stanox') as loc_stanox,
+       EXTRACTJSONFIELD(MVT.BODY,'$.auto_expected') as auto_expected,
+       EXTRACTJSONFIELD(MVT.BODY,'$.direction_ind') as direction_ind,
+       EXTRACTJSONFIELD(MVT.BODY,'$.route') as route,
+       EXTRACTJSONFIELD(MVT.BODY,'$.planned_event_type') as planned_event_type,
+       EXTRACTJSONFIELD(MVT.BODY,'$.next_report_stanox') as next_report_stanox,
+       EXTRACTJSONFIELD(MVT.BODY,'$.line_ind') as line_ind,
+       CONCAT_WS('/',
+                 EXTRACTJSONFIELD(MVT.BODY,'$.train_id'),
+                 EXTRACTJSONFIELD(MVT.BODY,'$.planned_event_type'),
+                 EXTRACTJSONFIELD(MVT.BODY,'$.loc_stanox')) AS MSG_KEY
+  FROM NETWORKRAIL_TRAIN_MVT_X MVT
+WHERE MVT.header->msg_type = '0003'
+PARTITION BY EXTRACTJSONFIELD(MVT.BODY,'$.train_id');

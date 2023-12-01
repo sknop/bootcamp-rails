@@ -1,0 +1,194 @@
+-- https://wiki.openraildata.com/index.php?title=Train_Cancellation
+-- 
+
+SET 'auto.offset.reset' = 'earliest';
+
+-- Create a stream of cancellations (type=0002) first for optimisation 
+-- reasons so that non-cancellations records are not processed in the subsequent joins
+CREATE STREAM TRAIN_CANCELLATIONS_00 AS 
+SELECT    MVT.HEADER                                                    AS MSG_HEADER, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_file_address')             AS TRAIN_FILE_ADDRESS, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_service_code')             AS TRAIN_SERVICE_CODE, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.orig_loc_stanox')                AS ORIG_LOC_STANOX, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.toc_id')                         AS TOC_ID, 
+          CASE
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '2' THEN 'JSD Rail Research & Development'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '3' THEN 'Victa Westlink Rail (defunct)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '4' THEN 'DB Cargo Charters'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '5' THEN 'DB Cargo Freight'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '6' THEN 'Eurostar'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '7' THEN 'Rail Operations Group'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '8' THEN 'DB Cargo International'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '9' THEN 'Freightliner Intermodal'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '10' THEN 'Serco Rail Operations'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '11' THEN 'Freightliner Heavy Haul'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '12' THEN 'Freight Europe (defunct)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '12' THEN 'Grand Union Trains'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '13' THEN 'Europorte Channel'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '14' THEN 'Alliance Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '14' THEN 'Grand Central (North West)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '15' THEN 'Network Rail (On-Track Machines)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '16' THEN 'LORAM'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '17' THEN 'Hanson & Hall Rail Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '18' THEN 'Swanage Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '19' THEN 'South Yorkshire Supertram'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '20' THEN 'TransPennine Express'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '21' THEN 'Greater Anglia'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '22' THEN 'Grand Central'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '23' THEN 'Northern Trains'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '24' THEN 'Heathrow Connect'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '25' THEN 'Great Western Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '26' THEN 'Unmapped (was First Capital Connect)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '27' THEN 'CrossCountry'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '28' THEN 'East Midlands Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '29' THEN 'West Midlands Trains'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '30' THEN 'London Overground'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '31' THEN 'Network Rail Virtual Freight Company'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '32' THEN 'Wrexham and Shropshire (defunct)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '33' THEN 'Elizabeth line'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '34' THEN 'DC Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '35' THEN 'Caledonian Sleeper'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '36' THEN 'Vintage Trains'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '37' THEN 'Seco Rail (defunct)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '38' THEN 'Carillion Rail CTRL (Phase 1) (defunct)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '39' THEN 'Harsco'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '40' THEN 'Balfour Beatty Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '41' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '42' THEN 'Colas Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '43' THEN 'Amey Fleet Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '44' THEN 'Carillion Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '45' THEN 'Lumo'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '46' THEN 'SB (Swietelsky Babcock) Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '47' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '48' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '49' THEN 'VolkerRail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '50' THEN 'West Coast Railways'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '51' THEN 'North Yorkshire Moors Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '52' THEN 'Pre Metro Operations'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '53' THEN 'SNCF Freight Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '54' THEN 'GB Railfreight'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '55' THEN 'Hull Trains'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '56' THEN 'Nexus (Tyne & Wear Metro)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '57' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '58' THEN 'Unmapped (was Advenza Freight)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '59' THEN 'On Route Logistics'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '60' THEN 'ScotRail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '61' THEN 'London North Eastern Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '62' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '63' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '64' THEN 'Merseyrail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '65' THEN 'Avanti West Coast'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '66' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '67' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '68' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '69' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '70' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '71' THEN 'Transport for Wales'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '72' THEN 'Legge Infrastructure Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '73' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '74' THEN 'Chiltern Railways'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '75' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '76' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '77' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '78' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '79' THEN 'c2c'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '80' THEN 'Southeastern'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '81' THEN 'Unmapped (was Gatwick Express)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '82' THEN 'Unmapped (was Southern)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '83' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '84' THEN 'South Western Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '85' THEN 'Island Lines'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '86' THEN 'Heathrow Express'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '87' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Govia Thameslink Railway (Great Northern)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Govia Thameslink Railway (Thameslink)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '88' THEN 'Southern'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '89' THEN 'Locomotive Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '90' THEN 'LUL District Line - Wimbledon'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '91' THEN 'LUL Bakerloo Line'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '92' THEN 'Network Rail Reserved Pathings (non-QJ)'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '93' THEN 'LUL District Line - Richmond'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '94' THEN 'Ffestiniog Railway'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '95' THEN 'Varamis Rail'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '96' THEN 'Unmapped'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '97' THEN 'Direct Rail Services'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '98' THEN 'Internal Testing'
+              WHEN EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') = '11' THEN 'SLC Operations'
+              ELSE '<unknown TOC code: ' + EXTRACTJSONFIELD(MVT.BODY,'$.toc_id') + '>'
+          END                                                           AS TOC,
+          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.dep_timestamp') AS BIGINT)  AS DEP_TIMESTAMP, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.division_code')                  AS DIVISION_CODE, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.loc_stanox')                     AS LOC_STANOX, 
+          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.canx_timestamp') AS BIGINT) AS CANX_TIMESTAMP, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.canx_reason_code')               AS CANX_REASON_CODE, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_id')                       AS TRAIN_ID, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.orig_loc_timestamp')             AS ORIG_LOC_TIMESTAMP, 
+          EXTRACTJSONFIELD(MVT.BODY,'$.canx_type')                      AS CANX_TYPE
+FROM      NETWORKRAIL_TRAIN_MVT_X MVT 
+WHERE     MVT.HEADER->MSG_TYPE = '0002' 
+PARTITION BY EXTRACTJSONFIELD(MVT.BODY,'$.train_id');
+
+CREATE STREAM TRAIN_CANCELLATIONS WITH (FORMAT='AVRO', KAFKA_TOPIC='TRAIN_CANCELLATIONS', PARTITIONS=6)
+ AS SELECT    TC.MSG_HEADER AS MSG_HEADER,
+           TC.TRAIN_FILE_ADDRESS                            AS TRAIN_FILE_ADDRESS,
+           TC.TRAIN_SERVICE_CODE                            AS TRAIN_SERVICE_CODE,
+           TC.ORIG_LOC_STANOX                               AS ORIG_LOC_STANOX,
+           TC.TOC_ID                                        AS TOC_ID,
+           TC.TOC                                           AS TOC,
+           TC.DEP_TIMESTAMP                                 AS DEP_TIMESTAMP,
+           TC.DIVISION_CODE                                 AS DIVISION_CODE,
+           TC.LOC_STANOX                                    AS LOC_STANOX,
+           TC.CANX_TIMESTAMP                                AS CANX_TIMESTAMP,
+           TC.CANX_REASON_CODE                              AS CANX_REASON_CODE,
+           C.CANX_REASON                                    AS CANX_REASON,
+           L.DESCRIPTION                                    AS CANCELLATION_LOCATION,
+           L.LAT_LON                                        AS CANCELLATION_LAT_LON,
+           TC.TRAIN_ID                                      AS TRAIN_ID,
+           TC.ORIG_LOC_TIMESTAMP                            AS ORIG_LOC_TIMESTAMP,
+           TC.CANX_TYPE                                     AS CANX_TYPE,
+           TA.SCHEDULE_SOURCE                               AS SCHEDULE_SOURCE,
+           TA.TP_ORIGIN_TIMESTAMP                           AS TP_ORIGIN_TIMESTAMP,
+           TA.SCHEDULE_TYPE                                 AS SCHEDULE_TYPE,
+           TA.CREATION_TIMESTAMP                            AS CREATION_TIMESTAMP,
+           TA.ORIGIN_DEP_TIMESTAMP                          AS ORIGIN_DEP_TIMESTAMP,
+           TA.D1266_RECORD_NUMBER                           AS D1266_RECORD_NUMBER,
+           TA.TRAIN_SERVICE_CODE                            AS TRAIN_SERVICE_CODE_02,
+           TA.SCHED_ORIGIN_STANOX                           AS SCHED_ORIGIN_STANOX,
+           TA.TRAIN_UID                                     AS TRAIN_UID,
+           TA.TRAIN_CALL_MODE                               AS TRAIN_CALL_MODE,
+           TA.TP_ORIGIN_STANOX                              AS TP_ORIGIN_STANOX,
+           TA.SCHEDULE_WTT_ID                               AS SCHEDULE_WTT_ID,
+           TA.TRAIN_CALL_TYPE                               AS TRAIN_CALL_TYPE,
+           TA.SCHEDULE_END_DATE                             AS SCHEDULE_END_DATE,
+           COALESCE(TA.SCHEDULE_KEY,'no_schedule_found')    AS SCHEDULE_KEY,
+           TA.SCHED_ORIGIN_DESC                             AS SCHED_ORIGIN_DESC,
+           SCH.CIF_TRAIN_UID                                AS CIF_TRAIN_UID,
+           SCH.SCHEDULE_START_DATE                          AS SCHEDULE_START_DATE,
+           SCH.CIF_STP_INDICATOR                            AS CIF_STP_INDICATOR,
+           SCH.ATOC_CODE                                    AS ATOC_CODE,
+           SCH.TRAIN_STATUS                                 AS TRAIN_STATUS,
+           SCH.POWER_TYPE                                   AS POWER_TYPE,
+           SCH.SEATING_CLASSES                              AS SEATING_CLASSES,
+           SCH.RESERVATIONS                                 AS RESERVATIONS,
+           SCH.SLEEPING_ACCOMODATION                        AS SLEEPING_ACCOMODATION,
+           SCH.TRAIN_CATEGORY                               AS TRAIN_CATEGORY,
+           SCH.ORIGIN_TIPLOC_CODE                           AS ORIGIN_TIPLOC_CODE,
+           SCH.ORIGIN_DESCRIPTION                           AS ORIGIN_DESCRIPTION,
+           SCH.ORIGIN_LAT_LON                               AS ORIGIN_LAT_LON,
+           SCH.ORIGIN_PUBLIC_DEPARTURE_TIME                 AS ORIGIN_PUBLIC_DEPARTURE_TIME,
+           SCH.ORIGIN_PLATFORM                              AS ORIGIN_PLATFORM,
+           SCH.DESTINATION_TIPLOC_CODE                      AS DESTINATION_TIPLOC_CODE,
+           SCH.DESTINATION_DESCRIPTION                      AS DESTINATION_DESCRIPTION,
+           SCH.DESTINATION_LAT_LON                          AS DESTINATION_LAT_LON,
+           SCH.DESTINATION_PUBLIC_ARRIVAL_TIME              AS DESTINATION_PUBLIC_ARRIVAL_TIME,
+           SCH.DESTINATION_PLATFORM                         AS DESTINATION_PLATFORM
+     FROM TRAIN_CANCELLATIONS_00 TC
+           LEFT JOIN LOCATIONS_BY_STANOX L
+                     ON        TC.LOC_STANOX = L.STANOX
+           LEFT JOIN CANX_REASON6P C
+                     ON        TC.CANX_REASON_CODE = C.CANX_REASON_CODE
+           JOIN TRAIN_ACTIVATIONS TA
+                     ON        TC.TRAIN_ID = TA.TRAIN_ID
+           JOIN SCHEDULE SCH
+                     ON        TA.SCHEDULE_KEY = SCH.SCHEDULE_KEY
+ PARTITION BY TC.TRAIN_ID;
