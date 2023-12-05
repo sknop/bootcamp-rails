@@ -1,0 +1,103 @@
+company_name,business_code,toc_id,atoc_code
+Alliance Rail,ZB,14,AR
+Northern Trains,ED,23,NT
+Transport for Wales,HL,71,AW
+c2c,HT,79,CC
+Caledonian Sleeper,ES,35,CS
+Chiltern Railways,HO,74,CH
+CrossCountry,EH,27,XC
+DC Rail,PO,34,ZZ
+East Midlands Railway,EM,28,EM
+Eurostar,GA,6,ES
+Unmapped (was First Capital Connect),EG,26,FC
+Hull Trains,PF,55,HT
+Unmapped (was Gatwick Express),HV,81,GX
+GB Railfreight,PE,54,ZZ
+Govia Thameslink Railway (Great Northern),ET,88,GN
+Govia Thameslink Railway (Thameslink),ET,88,TL
+Grand Central,EC,22,GC
+Grand Central (North West),LN,14,GC
+Great Western Railway,EF,25,GW
+Greater Anglia,EB,21,LE
+Heathrow Connect,EE,24,HC
+Heathrow Express,HM,86,HX
+Island Lines,HZ,85,IL
+Locomotive Services,LS,89,LS
+West Midlands Trains,EJ,29,LM
+London Overground,EK,30,LO
+LUL Bakerloo Line,XC,91,LT
+LUL District Line - Richmond,XE,93,LT
+LUL District Line - Wimbledon,XB,90,LT
+Merseyrail,HE,64,ME
+Network Rail (On-Track Machines),LR,15,LR
+Nexus (Tyne & Wear Metro),PG,56,TW
+North Yorkshire Moors Railway,PR,51,NY
+ScotRail,HA,60,SR
+South Western Railway,HY,84,SW
+South Yorkshire Supertram,SJ,19,SJ
+Southeastern,HU,80,SE
+Southern,HW,88,SN
+Swanage Railway,SP,18,SP
+Elizabeth line,EX,33,XR
+TransPennine Express,EA,20,TP
+Avanti West Coast,HF,65,VT
+London North Eastern Railway,HB,61,GR
+West Coast Railways,PA,50,WR
+JSD Rail Research & Development,RR,2,ZZ
+Victa Westlink Rail (defunct),PV,3,ZZ
+DB Cargo Charters,FM,4,ZZ
+DB Cargo Freight,WA,5,ZZ
+Rail Operations Group,PH,7,ZZ
+DB Cargo International,DA,8,ZZ
+Freightliner Intermodal,DB,9,ZZ
+Serco Rail Operations,SD,10,ZZ
+Freightliner Heavy Haul,DH,11,ZZ
+Freight Europe (defunct),PN,12,ZZ
+Europorte Channel,PT,13,ZZ
+LORAM,LC,16,ZZ
+Hanson & Hall Rail Services,YG,17,ZZ
+Network Rail Virtual Freight Company,QJ,31,ZZ
+Wrexham and Shropshire (defunct),EI,32,WS
+Vintage Trains,TY,36,TY
+Seco Rail (defunct),RU,37,ZZ
+Carillion Rail CTRL (Phase 1) (defunct),RQ,38,ZZ
+Harsco,RT,39,ZZ
+Balfour Beatty Rail,RZ,40,ZZ
+Unmapped,,41,
+Colas Rail,RG,42,ZZ
+Amey Fleet Services,RE,43,ZZ
+Carillion Rail,RB,44,ZZ
+Lumo,LD,45,LD
+SB (Swietelsky Babcock) Rail,RD,46,ZZ
+Unmapped,,47,
+Unmapped,,48,
+VolkerRail,RH,49,ZZ
+Pre Metro Operations,PK,52,ZZ
+SNCF Freight Services,PS,53,ZZ
+Unmapped,,57,
+Unmapped (was Advenza Freight),PI,58,ZZ
+On Route Logistics,PM,59,ZZ
+SLC Operations,SO,11,SO
+Unmapped,,62,
+Unmapped,,63,
+Unmapped,,66,
+Unmapped,,67,
+Unmapped,,68,
+Unmapped,,69,
+Unmapped,,70,
+Grand Union Trains,LF,12,LF
+Legge Infrastructure Services,LG,72,ZZ
+Unmapped,,73,
+Unmapped,,75,
+Unmapped,,76,
+Unmapped,,77,
+Unmapped,,78,
+Unmapped (was Southern),HW,82,SN
+Unmapped,,83,
+Unmapped,,87,
+Network Rail Reserved Pathings (non-QJ),NR,92,ZZ
+Ffestiniog Railway,XJ,94,
+Varamis Rail,MV,95,
+Unmapped,,96,
+Direct Rail Services,XH,97,ZZ
+Internal Testing,RM,98,ZZ
