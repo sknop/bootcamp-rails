@@ -18,7 +18,7 @@ resource "confluent_role_binding" "app-ksql-schema-registry-resource-owner" {
 
 resource "confluent_ksql_cluster" "bootcamp" {
   display_name = "bootcamp"
-  csu          = 1
+  csu          = 2
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }

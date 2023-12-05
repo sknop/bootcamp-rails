@@ -71,3 +71,24 @@ resource "confluent_kafka_topic" "CANX_REASON_CODE" {
     "retention.bytes" = "-1"
   }
 }
+
+resource "confluent_kafka_topic" "TOC_CODES" {
+  kafka_cluster  {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+
+  topic_name       = "TOC_CODES"
+  partitions_count = 6
+  rest_endpoint    = confluent_kafka_cluster.bootcamp.rest_endpoint
+
+  credentials {
+    key    = confluent_api_key.app-manager-kafka-api-key.id
+    secret = confluent_api_key.app-manager-kafka-api-key.secret
+  }
+
+  config = {
+    "cleanup.policy" = "compact"
+    "retention.ms" = "-1"
+    "retention.bytes" = "-1"
+  }
+}
