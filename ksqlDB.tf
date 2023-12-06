@@ -34,3 +34,30 @@ resource "confluent_ksql_cluster" "bootcamp" {
     confluent_schema_registry_cluster.essentials
   ]
 }
+
+resource "confluent_api_key" "ksqldb-api-key" {
+  display_name = "ksqldb-api-key"
+  description  = "KsqlDB API Key that is owned by 'app-manager' service account"
+  owner {
+    id = confluent_service_account.app-ksql.id
+    api_version = confluent_service_account.app-ksql.api_version
+    kind        = confluent_service_account.app-ksql.kind
+  }
+
+  managed_resource {
+    api_version = confluent_ksql_cluster.bootcamp.api_version
+    id          = confluent_ksql_cluster.bootcamp.id
+    kind        = confluent_ksql_cluster.bootcamp.kind
+
+    environment {
+      id = confluent_environment.stream_bootcamp.id
+    }
+  }
+}
+
+
+resource "local_file" "app-ksql-api-key" {
+  filename = "${path.module}/app-ksql-apikey.json"
+  content = "{\n\t\"api_key\": \"${confluent_api_key.ksqldb-api-key.id}\",\n\t\"secret\": \"${confluent_api_key.ksqldb-api-key.secret}\"\n}"
+  file_permission = "0600"
+}

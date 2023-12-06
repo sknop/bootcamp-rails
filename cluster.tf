@@ -55,6 +55,6 @@ resource "confluent_api_key" "app-manager-kafka-api-key" {
 resource "local_file" "app-manager-api-key" {
   filename = "${path.module}/app-manager-apikey.json"
   content = "{\n\t\"api_key\": \"${confluent_api_key.app-manager-kafka-api-key.id}\",\n\t\"secret\": \"${confluent_api_key.app-manager-kafka-api-key.secret}\"\n}"
-  file_permission = "0664"
+  file_permission = "0600"
 }
 
