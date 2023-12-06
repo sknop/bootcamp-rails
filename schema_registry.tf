@@ -61,5 +61,5 @@ locals {
 resource "local_file" "schema-api-key" {
   filename = "${path.module}/schema-apikey.json"
   content = "{\n\t\"api_key\": \"${local.schema_api_key}\",\n\t\"secret\": \"${local.schema_secret}\"\n}"
-  file_permission = "0664"
+  file_permission = "0600"
 }
