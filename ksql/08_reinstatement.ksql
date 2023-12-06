@@ -1,46 +1,43 @@
--- https://wiki.openraildata.com/index.php?title=Train_Cancellation
+-- https://wiki.openraildata.com/index.php?title=Train_Reinstatement
 -- 
+-- Per above webpage, note re. schedule_type	: 
+--    There is a bug that causes this field to be populated incorrectly. 
+--    The value O should be P and P should be O.
 
 SET 'auto.offset.reset' = 'earliest';
-
--- Create a stream of cancellations (type=0002) first for optimisation 
--- reasons so that non-cancellations records are not processed in the subsequent joins
-CREATE STREAM TRAIN_CANCELLATIONS_00 AS 
-SELECT    MVT.HEADER                                                    AS MSG_HEADER, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.train_file_address')             AS TRAIN_FILE_ADDRESS, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.train_service_code')             AS TRAIN_SERVICE_CODE, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.orig_loc_stanox')                AS ORIG_LOC_STANOX, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.toc_id')                         AS TOC_ID,
-          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.dep_timestamp') AS BIGINT)  AS DEP_TIMESTAMP, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.division_code')                  AS DIVISION_CODE, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.loc_stanox')                     AS LOC_STANOX, 
-          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.canx_timestamp') AS BIGINT) AS CANX_TIMESTAMP, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.canx_reason_code')               AS CANX_REASON_CODE, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.train_id')                       AS TRAIN_ID, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.orig_loc_timestamp')             AS ORIG_LOC_TIMESTAMP, 
-          EXTRACTJSONFIELD(MVT.BODY,'$.canx_type')                      AS CANX_TYPE
-FROM      NETWORKRAIL_TRAIN_MVT_X MVT 
-WHERE     MVT.HEADER->MSG_TYPE = '0002' 
+CREATE STREAM TRAIN_REINSTATEMENT_00
+  WITH (FORMAT='AVRO') AS 
+SELECT    MVT.HEADER                                                                AS MSG_HEADER,
+          EXTRACTJSONFIELD(MVT.BODY,'$.current_train_id')                           AS CURRENT_TRAIN_ID,
+          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.original_loc_timestamp') AS BIGINT)     AS ORIGINAL_LOC_TIMESTAMP,
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_file_address')                         AS TRAIN_FILE_ADDRESS,
+          EXTRACTJSONFIELD(MVT.BODY,'$.toc_id')                                     AS TOC_ID,
+          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.dep_timestamp') AS BIGINT)              AS DEP_TIMESTAMP,
+          EXTRACTJSONFIELD(MVT.BODY,'$.division_code')                              AS DIVISION_CODE,
+          EXTRACTJSONFIELD(MVT.BODY,'$.loc_stanox')                                 AS LOC_STANOX,
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_service_code')                         AS TRAIN_SERVICE_CODE,
+          EXTRACTJSONFIELD(MVT.BODY,'$.train_id')                                   AS TRAIN_ID,
+          EXTRACTJSONFIELD(MVT.BODY,'$.original_loc_stanox')                        AS ORIGINAL_LOC_STANOX,
+          Cast(EXTRACTJSONFIELD(MVT.BODY,'$.reinstatement_timestamp') AS BIGINT)    AS REINSTATEMENT_TIMESTAMP
+FROM      NETWORKRAIL_TRAIN_MVT_X MVT
+WHERE     MVT.HEADER->MSG_TYPE = '0005'
 PARTITION BY EXTRACTJSONFIELD(MVT.BODY,'$.train_id');
 
-CREATE STREAM TRAIN_CANCELLATIONS WITH (FORMAT='AVRO', KAFKA_TOPIC='TRAIN_CANCELLATIONS', PARTITIONS=6)
- AS SELECT    TC.MSG_HEADER AS MSG_HEADER,
-           TC.TRAIN_FILE_ADDRESS                            AS TRAIN_FILE_ADDRESS,
-           TC.TRAIN_SERVICE_CODE                            AS TRAIN_SERVICE_CODE,
-           TC.ORIG_LOC_STANOX                               AS ORIG_LOC_STANOX,
-           TC.TOC_ID                                        AS TOC_ID,
+
+CREATE STREAM TRAIN_REINSTATEMENT WITH (FORMAT='AVRO', KAFKA_TOPIC='TRAIN_REINSTATEMENT', PARTITIONS=6)
+ AS SELECT TR.MSG_HEADER AS MSG_HEADER,
+           TR.CURRENT_TRAIN_ID                              AS CURRENT_TRAIN_ID,
+           TR.ORIGINAL_LOC_TIMESTAMP                        AS ORIGINAL_LOC_TIMESTAMP,
+           TR.TRAIN_FILE_ADDRESS                            AS TRAIN_FILE_ADDRESS,
+           TR.TOC_ID                                        AS TOC_ID,
            TA.TOC                                           AS TOC,
-           TC.DEP_TIMESTAMP                                 AS DEP_TIMESTAMP,
-           TC.DIVISION_CODE                                 AS DIVISION_CODE,
-           TC.LOC_STANOX                                    AS LOC_STANOX,
-           TC.CANX_TIMESTAMP                                AS CANX_TIMESTAMP,
-           TC.CANX_REASON_CODE                              AS CANX_REASON_CODE,
-           C.CANX_REASON                                    AS CANX_REASON,
-           L.DESCRIPTION                                    AS CANCELLATION_LOCATION,
-           L.LAT_LON                                        AS CANCELLATION_LAT_LON,
-           TC.TRAIN_ID                                      AS TRAIN_ID,
-           TC.ORIG_LOC_TIMESTAMP                            AS ORIG_LOC_TIMESTAMP,
-           TC.CANX_TYPE                                     AS CANX_TYPE,
+           TR.DEP_TIMESTAMP                                 AS DEP_TIMESTAMP,
+           TR.DIVISION_CODE                                 AS DIVISION_CODE,
+           TR.LOC_STANOX                                    AS LOC_STANOX,
+           TR.TRAIN_SERVICE_CODE                            AS TRAIN_SERVICE_CODE,
+           TR.TRAIN_ID                                      AS TRAIN_ID,
+           TR.ORIGINAL_LOC_STANOX                           AS ORIGINAL_LOC_STANOX,
+           TR.REINSTATEMENT_TIMESTAMP                       AS REINSTATEMENT_TIMESTAMP,
            TA.SCHEDULE_SOURCE                               AS SCHEDULE_SOURCE,
            TA.TP_ORIGIN_TIMESTAMP                           AS TP_ORIGIN_TIMESTAMP,
            TA.SCHEDULE_TYPE                                 AS SCHEDULE_TYPE,
@@ -77,13 +74,11 @@ CREATE STREAM TRAIN_CANCELLATIONS WITH (FORMAT='AVRO', KAFKA_TOPIC='TRAIN_CANCEL
            SCH.DESTINATION_LAT_LON                          AS DESTINATION_LAT_LON,
            SCH.DESTINATION_PUBLIC_ARRIVAL_TIME              AS DESTINATION_PUBLIC_ARRIVAL_TIME,
            SCH.DESTINATION_PLATFORM                         AS DESTINATION_PLATFORM
-     FROM TRAIN_CANCELLATIONS_00 TC
+     FROM TRAIN_REINSTATEMENT_00 TR
            LEFT JOIN LOCATIONS_BY_STANOX L
-                     ON        TC.LOC_STANOX = L.STANOX
-           LEFT JOIN CANX_REASON6P C
-                     ON        TC.CANX_REASON_CODE = C.CANX_REASON_CODE
+                     ON        TR.LOC_STANOX = L.STANOX
            JOIN TRAIN_ACTIVATIONS TA
-                     ON        TC.TRAIN_ID = TA.TRAIN_ID
+                     ON        TR.TRAIN_ID = TA.TRAIN_ID
            JOIN SCHEDULE SCH
                      ON        TA.SCHEDULE_KEY = SCH.SCHEDULE_KEY
- PARTITION BY TC.TRAIN_ID;
+ PARTITION BY TR.TRAIN_ID;

@@ -9,3 +9,11 @@ CREATE TABLE CANX_REASON6P WITH (PARTITIONS=6) AS SELECT * FROM CANX_REASON;
 -- https://wiki.openraildata.com/index.php?title=Delay_Attribution_Guide
 -- https://wiki.openraildata.com/index.php?title=Train_Cancellation
 
+CREATE OR REPLACE TABLE IF NOT EXISTS TOC_CODES (
+    company_name VARCHAR,
+    business_code VARCHAR,
+    toc_id VARCHAR PRIMARY KEY,
+    atoc_code VARCHAR
+)
+WITH (KAFKA_TOPIC='TOC_CODES', KEY_FORMAT='KAFKA', VALUE_FORMAT='AVRO');
+
