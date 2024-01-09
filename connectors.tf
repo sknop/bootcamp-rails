@@ -22,7 +22,7 @@ resource "confluent_kafka_acl" "app-connector-describe-on-cluster" {
   }
 }
 
-resource "confluent_kafka_acl" "app-connector-write-on-target-topic" {
+resource "confluent_kafka_acl" "app-connector-write-on-NETWORKRAIL_TRAIN_MVT-topic" {
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }
@@ -40,6 +40,23 @@ resource "confluent_kafka_acl" "app-connector-write-on-target-topic" {
   }
 }
 
+resource "confluent_kafka_acl" "app-connector-write-on-TD_ALL_SIG_AREA-topic" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  resource_type = "TOPIC"
+  resource_name = confluent_kafka_topic.TD_ALL_SIG_AREA.topic_name
+  pattern_type  = "LITERAL"
+  principal     = "User:${confluent_service_account.app-connector.id}"
+  host          = "*"
+  operation     = "WRITE"
+  permission    = "ALLOW"
+  rest_endpoint = confluent_kafka_cluster.bootcamp.rest_endpoint
+  credentials {
+    key    = confluent_api_key.app-manager-kafka-api-key.id
+    secret = confluent_api_key.app-manager-kafka-api-key.secret
+  }
+}
 
 resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
   environment {
@@ -66,7 +83,36 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
   }
   depends_on = [
     confluent_kafka_acl.app-connector-describe-on-cluster,
-    confluent_kafka_acl.app-connector-write-on-target-topic,
+    confluent_kafka_acl.app-connector-write-on-NETWORKRAIL_TRAIN_MVT-topic
+  ]
+}
+
+resource "confluent_connector" "TD_ALL_SIG_AREA" {
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "activemq.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "connector.class" = "ActiveMQSource"
+    "activemq.username" = var.nrod_username
+    "name" = "TD_ALL_SIG_AREA"
+    "kafka.auth.mode" = "SERVICE_ACCOUNT"
+    "kafka.service.account.id" = confluent_service_account.app-connector.id
+    "activemq.url" = "tcp://datafeeds.networkrail.co.uk:61619"
+    "jms.destination.type" = "topic"
+    "jms.destination.name" = "TD_ALL_SIG_AREA"
+    "output.data.format" = "AVRO"
+    "kafka.topic" = confluent_kafka_topic.TD_ALL_SIG_AREA.topic_name
+    "tasks.max" = "1"
+  }
+  depends_on = [
+    confluent_kafka_acl.app-connector-describe-on-cluster,
+    confluent_kafka_acl.app-connector-write-on-TD_ALL_SIG_AREA-topic,
   ]
 }
 
