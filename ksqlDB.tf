@@ -61,3 +61,14 @@ resource "local_file" "app-ksql-api-key" {
   content = "{\n\t\"api_key\": \"${confluent_api_key.ksqldb-api-key.id}\",\n\t\"secret\": \"${confluent_api_key.ksqldb-api-key.secret}\"\n}"
   file_permission = "0600"
 }
+
+# Need to trim the URL, or it will throw KSQLClient, which expects no https:// or port
+locals {
+  ksql_endpoint = trimsuffix(trimprefix(confluent_ksql_cluster.bootcamp.rest_endpoint, "https://"), ":443")
+}
+
+resource "local_file" "ksql-property-file" {
+  filename = "${path.module}/ksql.properties"
+  content = "api.key = ${confluent_api_key.ksqldb-api-key.id}\napi.secret = ${confluent_api_key.ksqldb-api-key.secret}\nksqldb.endpoint = ${local.ksql_endpoint}\n"
+  file_permission = "0600"
+}
