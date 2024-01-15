@@ -32,6 +32,15 @@ You will need to define the following variables in your shell or the equivalent 
 
 This requires getting an account at https://publicdatafeeds.networkrail.co.uk/ if you do not have one yet.
 
+### Hints:
+
+Regular expression to convert CANX code:
+
+Find: ([A-Z0-9][A-Z0-9]):{"canx_reason":"(.*)","canx_abbrev":"(.*)"}
+
+Replace: \1,\2,\3
+
+
 ### More details to follow (TODO)
 
 - Finish uploading of KSQL statements
