@@ -129,7 +129,7 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
   }
   config_nonsensitive = {
     "name" = "NETWORKRAIL_CIF_TOTAL"
-    "connector.class" = "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
     "kafka.auth.mode" = "KAFKA_API_KEY"
     "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
     "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
