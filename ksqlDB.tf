@@ -62,9 +62,10 @@ resource "local_file" "app-ksql-api-key" {
   file_permission = "0600"
 }
 
-# Need to trim the URL, or it will throw KSQLClient, which expects no https:// or port
+# No need for trimming, will do this in the application. ksql CLI command needs the full URL
 locals {
-  ksql_endpoint = trimsuffix(trimprefix(confluent_ksql_cluster.bootcamp.rest_endpoint, "https://"), ":443")
+  # ksql_endpoint = trimsuffix(trimprefix(confluent_ksql_cluster.bootcamp.rest_endpoint, "https://"), ":443")
+  ksql_endpoint = confluent_ksql_cluster.bootcamp.rest_endpoint
 }
 
 resource "local_file" "ksql-property-file" {
