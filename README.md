@@ -40,6 +40,9 @@ Find: ([A-Z0-9][A-Z0-9]):{"canx_reason":"(.*)","canx_abbrev":"(.*)"}
 
 Replace: \1,\2,\3
 
+### Possible queries
+
+select FORMAT_TIMESTAMP(FROM_UNIXTIME(actual_timestamp) , 'yyyy-MM-dd HH:mm:ss') TIMESTAMP, event_type,  MVT_DESCRIPTION ,  PLATFORM, VARIATION_STATUS, TOC from train_movements;
 
 ### More details to follow (TODO)
 
