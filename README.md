@@ -38,7 +38,7 @@ Regular expression to convert CANX code:
 
 Find: ([A-Z0-9][A-Z0-9]):{"canx_reason":"(.*)","canx_abbrev":"(.*)"}
 
-Replace: \1,\2,\3
+Replace: \1|\2|\3
 
 ### Possible queries
 

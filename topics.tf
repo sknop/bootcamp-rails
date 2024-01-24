@@ -72,7 +72,8 @@ resource "confluent_kafka_topic" "CANX_REASON_CODE" {
   }
 
   topic_name       = "CANX_REASON_CODE"
-  partitions_count = 1
+  # partitions_count = 1
+  partitions_count = 6
   rest_endpoint    = confluent_kafka_cluster.bootcamp.rest_endpoint
 
   credentials {

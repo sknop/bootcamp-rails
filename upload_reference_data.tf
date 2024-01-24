@@ -10,6 +10,10 @@ variable "canx_reasons" {
   default = "data/canx_reason_code.dat"
 }
 
+variable "cancellation_reasons" {
+  default = "data/canx_reason_code.csv"
+}
+
 locals {
   upload-jar-file = "lib/CSVFileAvroUploader-1.0.1.jar"
 }
@@ -24,9 +28,19 @@ resource "null_resource" "ukrail_locations_upload" {
   ]
 }
 
-resource "null_resource" "canx_reason_code_upload" {
+#resource "null_resource" "canx_reason_code_upload" {
+#  provisioner "local-exec" {
+#    command = "kcat -F ${var.kcat-properties} -P -t ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} -K: -l ${var.canx_reasons}"
+#  }
+#
+#  depends_on = [
+#    confluent_kafka_topic.CANX_REASON_CODE
+#  ]
+#}
+
+resource "null_resource" "cancellation_reason_code_upload" {
   provisioner "local-exec" {
-    command = "kcat -F ${var.kcat-properties} -P -t ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} -K: -l ${var.canx_reasons}"
+    command = "java -jar ${local.upload-jar-file} -c ${var.ccloud-properties} -f ${var.cancellation_reasons} --topic ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} --key-field canx_reason_code -s cancellation --separator '|'"
   }
 
   depends_on = [
