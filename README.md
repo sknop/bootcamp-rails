@@ -18,6 +18,20 @@ This is a terraform script that will
   - ActiveMQSource for the train movement updates
 - Create a KSQL cluster
 
+### Git LFS
+
+In order to clone this repository, you will need to have Git LFS (large file support) installed on your platform.
+
+The easiest way to check if you have Git LFS available is to run
+
+    git lfs
+
+If git knows this command, everything is set up correctly.
+
+We need Git LFS because the JAR files included in this project exceed the GitHub limit of 100 MB.
+Without Git LFS, the files in the lib directory will be replaced with small text files that contain information
+about the JAR file, not the JAR files themselves.
+
 ### Preparation
 
 Add a `terraform.tfvars` file with target locations and credentials. 
