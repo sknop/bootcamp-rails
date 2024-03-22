@@ -27,3 +27,16 @@ output "Schema-Secret" {
   value = local.schema_secret
   sensitive = true
 }
+
+data "confluent_ip_addresses" "connect" {
+  filter {
+    clouds        = ["AWS"]
+    regions       = [var.confluent_region]
+    services      = ["CONNECT"]
+    address_types = ["EGRESS"]
+  }
+}
+
+output "ip_addresses" {
+  value = data.confluent_ip_addresses.connect.ip_addresses.*.ip_prefix
+}
