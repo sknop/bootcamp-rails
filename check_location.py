@@ -4,7 +4,6 @@ from configparser import ConfigParser
 from pprint import pformat
 import logging
 
-import pylab as p
 from confluent_kafka import Consumer, KafkaException, KafkaError, TopicPartition, OFFSET_INVALID, OFFSET_BEGINNING
 from confluent_kafka.serialization import SerializationContext, MessageField
 from confluent_kafka.schema_registry import SchemaRegistryClient
