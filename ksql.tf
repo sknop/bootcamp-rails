@@ -1,5 +1,5 @@
 locals {
-  ksql-jar-file = "lib/KSQLJavaClient-1.0.1.jar"
+  ksql-jar-file = "lib/KSQLJavaClient-1.0.2.jar"
   ksql-statements-dir = "ksql"
 }
 
