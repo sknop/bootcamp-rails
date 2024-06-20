@@ -15,12 +15,19 @@ variable "cancellation_reasons" {
 }
 
 locals {
-  upload-jar-file = "lib/CSVFileAvroUploader-1.0.1.jar"
+  upload-jar-file = "lib/CSVFileAvroUploader-1.0.2.jar"
 }
 
 resource "null_resource" "ukrail_locations_upload" {
   provisioner "local-exec" {
-    command = "java -jar ${local.upload-jar-file} -c ${var.ccloud-properties} -f ${var.ukrail_locations} --topic ${confluent_kafka_topic.LOCATIONS_RAW.topic_name} --key-field location_id -s location"
+    command = <<EOT
+      java \
+        -jar ${local.upload-jar-file} \
+        -c ${var.ccloud-properties} \
+        -f ${var.ukrail_locations} \
+        --topic ${confluent_kafka_topic.LOCATIONS_RAW.topic_name} \
+        --key-field location_id -s location -n io.confluent.bootcamp.rails.schema
+    EOT
   }
 
   depends_on = [
@@ -40,7 +47,17 @@ resource "null_resource" "ukrail_locations_upload" {
 
 resource "null_resource" "cancellation_reason_code_upload" {
   provisioner "local-exec" {
-    command = "java -jar ${local.upload-jar-file} -c ${var.ccloud-properties} -f ${var.cancellation_reasons} --topic ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} --key-field canx_reason_code -s cancellation --separator '|'"
+    command = <<EOT
+      java \
+        -jar ${local.upload-jar-file} \
+        -c ${var.ccloud-properties} \
+        -f ${var.cancellation_reasons} \
+        --topic ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} \
+        --key-field canx_reason_code \
+        -s cancellation  \
+        -n io.confluent.bootcamp.rails.schema \
+        --separator '|'"
+    EOT
   }
 
   depends_on = [
@@ -50,7 +67,16 @@ resource "null_resource" "cancellation_reason_code_upload" {
 
 resource "null_resource" "toc_upload" {
   provisioner "local-exec" {
-    command = "java -jar ${local.upload-jar-file} -c ${var.ccloud-properties} -f ${var.toc_codes} --topic ${confluent_kafka_topic.TOC_CODES.topic_name} --key-field toc_id -s toc_codes"
+    command = <<EOT
+      java \
+        -jar ${local.upload-jar-file} \
+        -c ${var.ccloud-properties} \
+        -f ${var.toc_codes} \
+        --topic ${confluent_kafka_topic.TOC_CODES.topic_name} \
+        --key-field toc_id \
+        -s toc_codes \
+        -n io.confluent.bootcamp.rails.schema
+    EOT
   }
 
   depends_on = [
