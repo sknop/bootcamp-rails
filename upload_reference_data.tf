@@ -56,7 +56,7 @@ resource "null_resource" "cancellation_reason_code_upload" {
         --key-field canx_reason_code \
         -s cancellation  \
         -n io.confluent.bootcamp.rails.schema \
-        --separator '|'"
+        --separator '|'
     EOT
   }
 
