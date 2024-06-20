@@ -56,7 +56,7 @@ class LocationChecker:
 
         partitions = self.get_partitions(consumer)
         # Reset the consumer group to start from the beginning, rather than creating a new one every time
-        reset_partitions = [TopicPartition(part.topic, part.partition,OFFSET_BEGINNING) for part in partitions]
+        reset_partitions = [TopicPartition(part.topic, part.partition, OFFSET_BEGINNING) for part in partitions]
         consumer.assign(reset_partitions)
 
         try:
@@ -100,7 +100,7 @@ class LocationChecker:
         if lat is None or lon is None or globe.is_land(lat, lon):
             pass  # print(f"{name}: {lat} {lon}")
         elif globe.is_ocean(lat, lon):
-            print(f"Ocean: {name} {description} {location_id} {stanox} {crs} {nlc} {isoffnetwork} with lat={lat} lon={lon}")
+            print(f"Ocean: {name if name != '' else '*'} {description} {location_id} {stanox} {crs} {nlc} {isoffnetwork} with lat={lat} lon={lon}")
         else:
             print("***** So what is it? *****")
 
