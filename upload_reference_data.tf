@@ -26,7 +26,9 @@ resource "null_resource" "ukrail_locations_upload" {
         -c ${var.ccloud-properties} \
         -f ${var.ukrail_locations} \
         --topic ${confluent_kafka_topic.LOCATIONS_RAW.topic_name} \
-        --key-field location_id -s location -n io.confluent.bootcamp.rails.schema
+        --key-field location_id \
+        -s LocationRaw \
+        -n io.confluent.bootcamp.rails.schema
     EOT
   }
 
@@ -54,7 +56,7 @@ resource "null_resource" "cancellation_reason_code_upload" {
         -f ${var.cancellation_reasons} \
         --topic ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} \
         --key-field canx_reason_code \
-        -s cancellation  \
+        -s CancellationReasonCode  \
         -n io.confluent.bootcamp.rails.schema \
         --separator '|'
     EOT
@@ -74,7 +76,7 @@ resource "null_resource" "toc_upload" {
         -f ${var.toc_codes} \
         --topic ${confluent_kafka_topic.TOC_CODES.topic_name} \
         --key-field toc_id \
-        -s toc_codes \
+        -s TocCode \
         -n io.confluent.bootcamp.rails.schema
     EOT
   }

@@ -80,6 +80,9 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
     "output.data.format" = "AVRO"
     "kafka.topic" = confluent_kafka_topic.NETWORKRAIL_TRAIN_MVT.topic_name
     "tasks.max" = "1"
+    "transforms" = "SetValueSchema"
+    "transforms.SetValueSchema.type" = "org.apache.kafka.connect.transforms.SetSchemaMetadata$Value"
+    "transforms.SetValueSchema.schema.name" = "io.confluent.bootcamp.rails.schema.NetworkRailMovement"
   }
   depends_on = [
     confluent_kafka_acl.app-connector-describe-on-cluster,
@@ -109,6 +112,9 @@ resource "confluent_connector" "TD_ALL_SIG_AREA" {
     "output.data.format" = "AVRO"
     "kafka.topic" = confluent_kafka_topic.TD_ALL_SIG_AREA.topic_name
     "tasks.max" = "1"
+    "transforms" = "SetValueSchema"
+    "transforms.SetValueSchema.type" = "org.apache.kafka.connect.transforms.SetSchemaMetadata$Value"
+    "transforms.SetValueSchema.schema.name" = "io.confluent.bootcamp.rails.schema.TrainDescriberSignalArea"
   }
   depends_on = [
     confluent_kafka_acl.app-connector-describe-on-cluster,
