@@ -5,3 +5,7 @@ terraform.tfstate*
 bootcamp-rails.iml
 /source-activemq-networkrail-TRAIN_MVT_EA_TOC-01.json
 /.envrc
+/env.sh
+/ccloud.properties
+/kcat.properties
+/ksql.properties
