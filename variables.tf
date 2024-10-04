@@ -20,10 +20,6 @@ variable "confluent_region" {
   type = string
 }
 
-variable "confluent_schema_region" {
-  type = string
-}
-
 variable "confluent_environment" {
   type = string
 }
