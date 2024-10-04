@@ -15,5 +15,9 @@ provider "confluent" {
 
 resource "confluent_environment" "stream_bootcamp" {
   display_name = var.confluent_environment
+
+  stream_governance {
+    package = "ESSENTIALS"
+  }
 }
 
