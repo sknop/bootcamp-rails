@@ -14,6 +14,10 @@ data "confluent_schema_registry_cluster" "essentials" {
   environment {
     id = confluent_environment.stream_bootcamp.id
   }
+
+  depends_on = [
+    confluent_kafka_cluster.bootcamp
+  ]
 }
 
 resource "confluent_api_key" "bootcamp-schema-registry-api-key" {
