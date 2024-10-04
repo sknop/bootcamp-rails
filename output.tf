@@ -3,7 +3,7 @@ output "bootcamp-cluster" {
 }
 
 output "schema-registry" {
-  value = confluent_schema_registry_cluster.essentials.rest_endpoint
+  value = data.confluent_schema_registry_cluster.essentials.rest_endpoint
 }
 
 output "ksql-server" {

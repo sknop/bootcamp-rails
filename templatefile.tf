@@ -27,7 +27,7 @@ resource "local_file" "ccloud-properties" {
     bootstrap_server = confluent_kafka_cluster.bootcamp.bootstrap_endpoint
     api_key = confluent_api_key.app-manager-kafka-api-key.id
     api_secret = confluent_api_key.app-manager-kafka-api-key.secret
-    schema_registry_url = confluent_schema_registry_cluster.essentials.rest_endpoint
+    schema_registry_url = data.confluent_schema_registry_cluster.essentials.rest_endpoint
     schema_api_key = confluent_api_key.bootcamp-schema-registry-api-key.id
     schema_api_secret = confluent_api_key.bootcamp-schema-registry-api-key.secret
   })
@@ -40,7 +40,7 @@ resource "local_file" "kcat-properties" {
     bootstrap_server = confluent_kafka_cluster.bootcamp.bootstrap_endpoint
     api_key = confluent_api_key.app-manager-kafka-api-key.id
     api_secret = confluent_api_key.app-manager-kafka-api-key.secret
-    schema_registry_url = replace(confluent_schema_registry_cluster.essentials.rest_endpoint, "https://", "")
+    schema_registry_url = replace(data.confluent_schema_registry_cluster.essentials.rest_endpoint, "https://", "")
     schema_api_key = confluent_api_key.bootcamp-schema-registry-api-key.id
     schema_api_secret = confluent_api_key.bootcamp-schema-registry-api-key.secret
   })
@@ -50,7 +50,7 @@ resource "local_file" "kcat-properties" {
 
 resource "local_file" "environment" {
   content = templatefile("${path.module}/${var.env-templatefile}", {
-    schema_registry_url = replace(confluent_schema_registry_cluster.essentials.rest_endpoint, "https://", "")
+    schema_registry_url = replace(data.confluent_schema_registry_cluster.essentials.rest_endpoint, "https://", "")
     schema_api_key = confluent_api_key.bootcamp-schema-registry-api-key.id
     schema_api_secret = confluent_api_key.bootcamp-schema-registry-api-key.secret
   })
