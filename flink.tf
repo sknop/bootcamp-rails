@@ -64,7 +64,7 @@ resource "confluent_flink_statement" "flink_locations" {
 	  'kafka.retention.time' = '0'
     )
     AS
-      SELECT `tiploc`, `name`, `description`, `location_id`, `crs`, `nlc`, `stanox`, `notes`
+      SELECT `tiploc`, `name`, `description`, `location_id`, `crs`, `nlc`, LPDA(`stanox`,5,'00000'), `notes`
       FROM LOCATIONS_RAW
       WHERE `tiploc` <> '';
   SQL
