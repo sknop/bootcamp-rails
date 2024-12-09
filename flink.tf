@@ -24,6 +24,25 @@ resource "confluent_role_binding" "app-flink" {
   crn_pattern = confluent_environment.stream_bootcamp.resource_name
 }
 
+resource "confluent_api_key" "flink-api-key" {
+  display_name = "env-manager-flink-api-key"
+  description = "Flink API Key owned by 'app-flink' service account"
+  owner = {
+    id = confluent_service_account.app-flink.id
+    api_version = confluent_service_account.app-flink.api_version
+    kind = confluent_service_account.app-flink.kind
+  }
+
+  managed_resource {
+    api_version = data.confluent_flink_region.rails_pool_region.api_version
+    id          = data.confluent_flink_region.rails_pool_region.id
+    kind        = data.confluent_flink_region.rails_pool_region.kind
+
+    environment {
+      id = confluent_environment.stream_bootcamp.id
+    }
+  }
+}
 data "confluent_organization" "bootcamp" {
 }
 
@@ -69,7 +88,7 @@ resource "confluent_flink_statement" "flink_locations" {
     id = confluent_service_account.app-flink.id
   }
   credentials {
-    key    = var.confluent_api_key
-    secret = var.confluent_api_secret
+    key    = confluent_api_key.flink-api-key.id
+    secret = confluent_api_key.flink-api-key.secret
   }
 }
