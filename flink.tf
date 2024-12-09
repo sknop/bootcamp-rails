@@ -27,7 +27,7 @@ resource "confluent_role_binding" "app-flink" {
 resource "confluent_api_key" "flink-api-key" {
   display_name = "env-manager-flink-api-key"
   description = "Flink API Key owned by 'app-flink' service account"
-  owner = {
+  owner {
     id = confluent_service_account.app-flink.id
     api_version = confluent_service_account.app-flink.api_version
     kind = confluent_service_account.app-flink.kind
