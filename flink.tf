@@ -66,7 +66,16 @@ resource "confluent_flink_statement" "flink_locations" {
 	  'kafka.retention.time' = '0'
     )
     AS
-      SELECT `tiploc`, `name`, `description`, `location_id`, `crs`, `nlc`, LPAD(`stanox`,5,'00000') as stanox, `notes`, `isOffNetwork`, `timingPointType`
+      SELECT
+        `tiploc`,
+        `name`,
+        `description`,
+        `location_id`,
+        `crs`,
+        `nlc`,
+        LPAD(`stanox`,5,'00000') as stanox,
+        `notes`, `isOffNetwork` AS is_off_network,
+        `timingPointType` as timing_point_type
       FROM LOCATIONS_RAW
       WHERE `tiploc` <> '';
   SQL
