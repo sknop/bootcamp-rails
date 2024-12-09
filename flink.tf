@@ -13,13 +13,6 @@ data "confluent_flink_region" "rails_pool_region" {
   region = confluent_flink_compute_pool.main.region
 }
 
-data "confluent_flink_compute_pool" "rails_pool" {
-  id = confluent_flink_compute_pool.main.id
-  environment {
-    id = confluent_environment.stream_bootcamp.id
-  }
-}
-
 resource "confluent_service_account" "app-flink" {
   display_name = "app-flink"
   description  = "Service account to manage Flink compute statements"
