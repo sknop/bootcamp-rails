@@ -10,6 +10,10 @@ output "ksql-server" {
   value = confluent_ksql_cluster.bootcamp.rest_endpoint
 }
 
+output "flink-compute-pool" {
+  value = confluent_flink_compute_pool.main.resource_name
+}
+
 output "app-manager-api-key" {
   value = confluent_api_key.app-manager-kafka-api-key.id
 }
