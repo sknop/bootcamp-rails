@@ -28,7 +28,7 @@ resource "confluent_service_account" "app-flink" {
 resource "confluent_role_binding" "app-flink" {
   principal   = "User:${confluent_service_account.app-flink.id}"
   role_name   = "EnvironmentAdmin"
-  crn_pattern = data.confluent_flink_compute_pool.rails_pool.resource_name
+  crn_pattern = confluent_environment.stream_bootcamp.resource_name
 }
 
 data "confluent_organization" "bootcamp" {
