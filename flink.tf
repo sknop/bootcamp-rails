@@ -8,9 +8,30 @@ resource "confluent_flink_compute_pool" "main" {
   }
 }
 
-data "confluent_flink_region" "rails_pool" {
+data "confluent_flink_region" "rails_pool_region" {
   cloud = confluent_flink_compute_pool.main.cloud
   region = confluent_flink_compute_pool.main.region
+}
+
+data "confluent_flink_compute_pool" "rails_pool" {
+  id = confluent_flink_compute_pool.main.id
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+}
+
+resource "confluent_service_account" "app-flink" {
+  display_name = "app-flink"
+  description  = "Service account to manage Flink compute statements"
+}
+
+resource "confluent_role_binding" "app-flink" {
+  principal   = "User:${confluent_service_account.app-flink.id}"
+  role_name   = "EnvironmentAdmin"
+  crn_pattern = data.confluent_flink_compute_pool.rails_pool.resource_name
+}
+
+data "confluent_organization" "bootcamp" {
 }
 
 resource "confluent_flink_statement" "flink_locations" {
@@ -39,5 +60,19 @@ resource "confluent_flink_statement" "flink_locations" {
     "sql.current-catalog"  = confluent_environment.stream_bootcamp.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
   }
-  rest_endpoint = data.confluent_flink_region.rails_pool.rest_endpoint
+
+  rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
+
+  organization {
+    id = data.confluent_organization.bootcamp.id
+  }
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.app-flink.id
+  }
 }
