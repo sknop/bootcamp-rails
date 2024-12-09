@@ -68,4 +68,8 @@ resource "confluent_flink_statement" "flink_locations" {
   principal {
     id = confluent_service_account.app-flink.id
   }
+  credentials {
+    key    = var.confluent_api_key
+    secret = var.confluent_api_secret
+  }
 }
