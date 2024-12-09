@@ -34,4 +34,5 @@ resource "confluent_flink_statement" "flink_locations" {
     "sql.current-catalog" = confluent_environment.stream_bootcamp.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
   }
+  rest_endpoint = data.confluent_flink_region.main.rest_endpoint
 }
