@@ -57,6 +57,8 @@ resource "confluent_flink_statement" "flink_locations" {
 	  `nlc` STRING ,
 	  `stanox` STRING,
 	  `notes` STRING,
+      `is_off_network` STRING,
+      `timing_point_type` STRING,
 	  PRIMARY KEY (`tiploc`) NOT ENFORCED)
     WITH (
 	  'changelog.mode' = 'upsert',
@@ -64,7 +66,7 @@ resource "confluent_flink_statement" "flink_locations" {
 	  'kafka.retention.time' = '0'
     )
     AS
-      SELECT `tiploc`, `name`, `description`, `location_id`, `crs`, `nlc`, LPAD(`stanox`,5,'00000') as stanox, `notes`
+      SELECT `tiploc`, `name`, `description`, `location_id`, `crs`, `nlc`, LPAD(`stanox`,5,'00000') as stanox, `notes`, `isOffNetwork`, `timingPointType`
       FROM LOCATIONS_RAW
       WHERE `tiploc` <> '';
   SQL
