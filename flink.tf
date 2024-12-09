@@ -8,6 +8,11 @@ resource "confluent_flink_compute_pool" "main" {
   }
 }
 
+data "confluent_flink_region" "rails_pool" {
+  cloud = confluent_flink_compute_pool.main.cloud
+  region = confluent_flink_compute_pool.main.region
+}
+
 resource "confluent_flink_statement" "flink_locations" {
   statement = <<SQL
     CREATE TABLE FLINK_LOCATIONS (
@@ -31,8 +36,8 @@ resource "confluent_flink_statement" "flink_locations" {
       WHERE `tiploc` <> '';
   SQL
   properties = {
-    "sql.current-catalog" = confluent_environment.stream_bootcamp.display_name
+    "sql.current-catalog"  = confluent_environment.stream_bootcamp.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
   }
-  rest_endpoint = data.confluent_flink_region.main.rest_endpoint
+  rest_endpoint = data.confluent_flink_region.rails_pool.rest_endpoint
 }
