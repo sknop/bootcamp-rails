@@ -154,7 +154,9 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
     confluent_service_account.app-manager
   ]
 
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
   lifecycle {
-    ignore_changes = [sensitive_config_properties]
+    ignore_changes = [config_nonsensitive]
   }
 }
