@@ -42,7 +42,12 @@ resource "confluent_api_key" "flink-api-key" {
       id = confluent_environment.stream_bootcamp.id
     }
   }
+
+  depends_on = [
+    confluent_role_binding.app-flink
+  ]
 }
+
 data "confluent_organization" "bootcamp" {
 }
 
