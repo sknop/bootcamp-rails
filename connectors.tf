@@ -153,4 +153,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
   depends_on = [
     confluent_service_account.app-manager
   ]
+
+  lifecycle {
+    ignore_changes = [sensitive_config_properties]
+  }
 }
