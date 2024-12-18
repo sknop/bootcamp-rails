@@ -78,4 +78,16 @@ resource "confluent_flink_statement" "flink_locations" {
     key    = confluent_api_key.flink-api-key.id
     secret = confluent_api_key.flink-api-key.secret
   }
+
+  depends_on = [
+    confluent_connector.NETWORKRAIL_CIF_TOTAL,
+    confluent_connector.NETWORKRAIL_TRAIN_MVT_ALL_TOC,
+    confluent_connector.TD_ALL_SIG_AREA,
+    confluent_kafka_topic.LOCATIONS_RAW,
+    confluent_kafka_topic.CANX_REASON_CODE,
+    confluent_kafka_topic.CIF_FULL_DAILY,
+    confluent_kafka_topic.NETWORKRAIL_TRAIN_MVT,
+    confluent_kafka_topic.TD_ALL_SIG_AREA,
+    confluent_kafka_topic.TOC_CODES
+  ]
 }
