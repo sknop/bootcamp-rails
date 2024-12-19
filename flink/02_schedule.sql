@@ -23,7 +23,7 @@ CREATE TABLE FLINK_SCHEDULE (
 )
     DISTRIBUTED BY (schedule_key) INTO 6 BUCKETS
 WITH (
-        'changelog.mode' = 'upsert',e
+        'changelog.mode' = 'upsert',
         'kafka.cleanup-policy' = 'compact',
         'kafka.retention.time' = '0'
     )
