@@ -60,9 +60,8 @@ resource "confluent_api_key" "flink-api-key" {
 data "confluent_organization" "bootcamp" {
 }
 
-resource "confluent_flink_statement" "flink_statements" {
-  for_each = fileset(path.module, "flink/*.sql")
-  statement = file(each.value)
+resource "confluent_flink_statement" "flink_locations" {
+  statement = file("flink/01_locations.sql")
 
   properties = {
     "sql.current-catalog"  = confluent_environment.stream_bootcamp.display_name
@@ -99,5 +98,69 @@ resource "confluent_flink_statement" "flink_statements" {
     confluent_kafka_topic.TD_ALL_SIG_AREA,
     confluent_kafka_topic.TOC_CODES,
     confluent_role_binding.app-flink-kafka-cluster-admin
+  ]
+}
+
+resource "confluent_flink_statement" "flink_schedule" {
+  statement = file("flink/02_schedule.sql")
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.stream_bootcamp.display_name
+    "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+  }
+
+  rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
+
+  organization {
+    id = data.confluent_organization.bootcamp.id
+  }
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.app-flink.id
+  }
+  credentials {
+    key    = confluent_api_key.flink-api-key.id
+    secret = confluent_api_key.flink-api-key.secret
+  }
+
+  depends_on = [
+    confluent_flink_statement.flink_locations
+  ]
+}
+
+resource "confluent_flink_statement" "flink_activations" {
+  statement = file("flink/03_activations.sql")
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.stream_bootcamp.display_name
+    "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+  }
+
+  rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
+
+  organization {
+    id = data.confluent_organization.bootcamp.id
+  }
+  environment {
+    id = confluent_environment.stream_bootcamp.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.app-flink.id
+  }
+  credentials {
+    key    = confluent_api_key.flink-api-key.id
+    secret = confluent_api_key.flink-api-key.secret
+  }
+
+  depends_on = [
+    confluent_flink_statement.flink_schedule
   ]
 }
