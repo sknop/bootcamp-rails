@@ -6,7 +6,7 @@ CREATE TABLE FLINK_TRAIN_ACTIVATIONS (
                                          msg_type				STRING,
                                          original_data_source	STRING,
                                          source_system_id		STRING,
-                                         tp_origin_timestamp	TIMESTAMP_LTZ,
+                                         tp_origin_timestamp	DATE,
                                          schedule_type			STRING,
                                          creation_timestamp		TIMESTAMP_LTZ,
                                          origin_dep_timestamp	TIMESTAMP_LTZ,
@@ -50,7 +50,7 @@ SELECT
     JSON_VALUE(message, '$.header.original_data_source') original_data_source,
     JSON_VALUE(message, '$.header.source_system_id') source_system_id,
     JSON_VALUE(message, '$.body.schedule_source') schedule_source,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.tp_origin_timestamp') AS BIGINT),3) tp_origin_timestamp,
+    TO_DATE(JSON_VALUE(message, '$.body.tp_origin_timestamp')) tp_origin_timestamp,
     CASE WHEN JSON_VALUE(message, '$.body.schedule_source') = 'O' THEN 'P'
          WHEN JSON_VALUE(message, '$.body.schedule_source') = 'P' THEN 'O'
          ELSE JSON_VALUE(message, '$.body.schedule_source')
