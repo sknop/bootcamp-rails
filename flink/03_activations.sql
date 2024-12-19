@@ -25,7 +25,7 @@ CREATE TABLE FLINK_TRAIN_ACTIVATIONS (
                                          train_id				STRING,
                                          sched_origin_desc		STRING,
                                          lat_lon				ROW(lat double , lon double),
-                                         PRIMARY KEY (SCHEDULE_KEY) NOT ENFORCED
+                                         PRIMARY KEY (schedule_key) NOT ENFORCED
 )
     WITH (
         'changelog.mode' = 'upsert',
