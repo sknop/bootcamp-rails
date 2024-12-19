@@ -60,7 +60,7 @@ resource "confluent_api_key" "flink-api-key" {
 data "confluent_organization" "bootcamp" {
 }
 
-resource "confluent_flink_statement" "flink_locations" {
+resource "confluent_flink_statement" "flink_statements" {
   for_each = fileset(path.module, "flink/*.sql")
   statement = file(each.value)
 

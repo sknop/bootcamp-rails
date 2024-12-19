@@ -6,7 +6,7 @@ CREATE TABLE FLINK_TRAIN_ACTIVATIONS (
                                          msg_type				STRING,
                                          original_data_source	STRING,
                                          source_system_id		STRING,
-                                         tp_origin_timestamp	STRING,
+                                         tp_origin_timestamp	TIMESTAMP_LTZ,
                                          schedule_type			STRING,
                                          creation_timestamp		TIMESTAMP_LTZ,
                                          origin_dep_timestamp	TIMESTAMP_LTZ,
@@ -56,7 +56,7 @@ SELECT
          ELSE JSON_VALUE(message, '$.body.schedule_source')
     END AS schedule_type,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.creation_timestamp') AS BIGINT),3) creation_timestamp,
-    JSON_VALUE(message, '$.body.origin_dep_timestamp') origin_dep_timestamp,
+    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.origin_dep_timestamp') AS BIGINT),3) origin_dep_timestamp,
     JSON_VALUE(message, '$.body.toc_id') toc_id,
     COALESCE(TC.company_name , 'Unknown TOC_ID')  AS toc,
     JSON_VALUE(message, '$.body.d1266_record_number') d1266_record_number,
