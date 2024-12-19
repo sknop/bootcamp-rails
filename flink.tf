@@ -24,6 +24,15 @@ resource "confluent_role_binding" "app-flink" {
   crn_pattern = confluent_environment.stream_bootcamp.resource_name
 }
 
+# TODO
+# This is a hack to get things working, need to narrow permissions down to bare minimum later
+
+resource "confluent_role_binding" "app-flink-kafka-cluster-admin" {
+  principal   = "User:${confluent_service_account.app-flink.id}"
+  role_name   = "CloudClusterAdmin"
+  crn_pattern = confluent_kafka_cluster.bootcamp.rbac_crn
+}
+
 resource "confluent_api_key" "flink-api-key" {
   display_name = "env-manager-flink-api-key"
   description = "Flink API Key owned by 'app-flink' service account"
