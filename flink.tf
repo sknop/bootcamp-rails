@@ -97,6 +97,7 @@ resource "confluent_flink_statement" "flink_locations" {
     confluent_kafka_topic.CIF_FULL_DAILY,
     confluent_kafka_topic.NETWORKRAIL_TRAIN_MVT,
     confluent_kafka_topic.TD_ALL_SIG_AREA,
-    confluent_kafka_topic.TOC_CODES
+    confluent_kafka_topic.TOC_CODES,
+    confluent_role_binding.app-flink-kafka-cluster-admin
   ]
 }
