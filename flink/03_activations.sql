@@ -1,6 +1,7 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
 CREATE TABLE FLINK_TRAIN_ACTIVATIONS (
+                                         train_id				STRING,
                                          schedule_key      		STRING,
                                          msg_queue_timestamp 	TIMESTAMP_LTZ,
                                          msg_type				STRING,
@@ -22,21 +23,21 @@ CREATE TABLE FLINK_TRAIN_ACTIVATIONS (
                                          schedule_wtt_id		STRING,
                                          train_call_type		STRING,
                                          schedule_end_date		DATE,
-                                         train_id				STRING,
                                          sched_origin_desc		STRING,
                                          lat_lon				ROW(lat double , lon double),
-                                         PRIMARY KEY (schedule_key) NOT ENFORCED
+                                         PRIMARY KEY (train_id) NOT ENFORCED
 )
     WITH (
         'changelog.mode' = 'upsert',
         'kafka.cleanup-policy' = 'compact',
-        'kafka.retention.time' = '7 days'
+        'kafka.retention.time' = '31 days'
         )
 AS
     WITH `TRAIN_MOVEMENT` AS (
         SELECT json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
     )
 SELECT
+    COALESCE(JSON_VALUE(message, '$.body.train_id'),'No ID') train_id,
     CONCAT_WS('/',
               COALESCE(JSON_VALUE(message, '$.body.train_uid'),''),
               COALESCE(JSON_VALUE(message, '$.body.schedule_start_date'),''),
@@ -69,7 +70,6 @@ SELECT
     JSON_VALUE(message, '$.body.schedule_wtt_id') schedule_wtt_id,
     JSON_VALUE(message, '$.body.train_call_type') train_call_type,
     TO_DATE(JSON_VALUE(message, '$.body.schedule_end_date')) schedule_end_date,
-    JSON_VALUE(message, '$.body.train_id') train_id,
     L.description as sched_origin_desc,
     L.lat_lon as lat_lon
 from `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
