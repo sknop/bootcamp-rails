@@ -41,9 +41,9 @@ SELECT
     CONCAT_WS('/',
               COALESCE(JSON_VALUE(message, '$.body.train_uid'),''),
               COALESCE(JSON_VALUE(message, '$.body.schedule_start_date'),''),
-              COALESCE(CASE WHEN JSON_VALUE(message, '$.body.schedule_source') = 'O' THEN 'P'
-                            WHEN JSON_VALUE(message, '$.body.schedule_source') = 'P' THEN 'O'
-                            ELSE JSON_VALUE(message, '$.body.schedule_source')
+              COALESCE(CASE WHEN JSON_VALUE(message, '$.body.schedule_type') = 'O' THEN 'P'
+                            WHEN JSON_VALUE(message, '$.body.schedule_type') = 'P' THEN 'O'
+                            ELSE JSON_VALUE(message, '$.body.schedule_type')
                            END,'')
     ) AS schedule_key,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
@@ -73,6 +73,6 @@ SELECT
     L.description as sched_origin_desc,
     L.lat_lon as lat_lon
 from `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      LEFT JOIN FLINK_LOCATIONS L ON L.stanox = JSON_VALUE(message, '$.body.sched_origin_stanox')
+                      LEFT JOIN FLINK_LOCATIONS L ON JSON_VALUE(message, '$.body.sched_origin_stanox') = L.stanox
                       LEFT JOIN TOC_CODES TC ON JSON_VALUE(message, '$.body.toc_id') = TC.toc_id
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0001';
