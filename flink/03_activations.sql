@@ -73,6 +73,6 @@ SELECT
     L.description as sched_origin_desc,
     L.lat_lon as lat_lon
 from `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      LEFT JOIN FLINK_LOCATIONS L ON JSON_VALUE(message, '$.body.sched_origin_stanox') = L.stanox
+                      LEFT JOIN FLINK_LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.sched_origin_stanox') = L.stanox
                       LEFT JOIN TOC_CODES TC ON JSON_VALUE(message, '$.body.toc_id') = TC.toc_id
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0001';

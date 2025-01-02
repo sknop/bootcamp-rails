@@ -87,6 +87,6 @@ select
     SCH.destination_platform                                            AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
                       JOIN FLINK_TRAIN_ACTIVATIONS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
-                      LEFT JOIN FLINK_LOCATIONS L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
+                      LEFT JOIN FLINK_LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
                       JOIN FLINK_SCHEDULE SCH ON TA.schedule_key = SCH.schedule_key
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0003';
