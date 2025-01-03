@@ -1,6 +1,6 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
-CREATE TABLE FLINK_TRAIN_CANCELLATIONS
+CREATE TABLE FLINK_TRAIN_REINSTATEMENTS
 AS
 WITH `TRAIN_MOVEMENT` AS (
     SELECT json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
@@ -17,9 +17,7 @@ select
     TA.toc                                                              AS toc,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.dep_timestamp') AS BIGINT),3) dep_timestamp,
     JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.canx_timestamp') AS BIGINT),3) canx_timestamp,
-    JSON_VALUE(message, '$.body.canx_reason_code') canx_reason_code,
-    C.canx_reason                                    AS canx_reason,
+    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.reinstatement_timestamp') AS BIGINT),3) reinstatement_timestamp,
     JSON_VALUE(message, '$.body.train_id') train_id,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.orig_loc_timestamp') AS BIGINT),3) orig_loc_timestamp,
     JSON_VALUE(message, '$.body.canx_type') canx_type,
@@ -60,7 +58,6 @@ select
     SCH.destination_platform                                            AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
                       JOIN FLINK_TRAIN_ACTIVATIONS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
-                      LEFT JOIN FLINK_LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-                      JOIN CANX_REASON_CODE C  ON JSON_VALUE(message, '$.body.canx_reason_code') = C.canx_reason_code
+                      LEFT JOIN FLINK_LOCATIONS L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
                       JOIN FLINK_SCHEDULE SCH ON TA.schedule_key = SCH.schedule_key
-WHERE JSON_VALUE(message, '$.header.msg_type') = '0002';
+WHERE JSON_VALUE(message, '$.header.msg_type') = '0005';

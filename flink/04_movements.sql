@@ -44,6 +44,7 @@ select
     JSON_VALUE(message, '$.body.route') route,
     JSON_VALUE(message, '$.body.timetable_variation') timetable_variation,
     JSON_VALUE(message, '$.body.toc_id') toc_id,
+    TA.toc                                                              AS toc,
     JSON_VALUE(message, '$.body.train_id') train_id,
     JSON_VALUE(message, '$.body.train_service_code') train_service_code,
     JSON_VALUE(message, '$.body.train_terminated') train_terminated,
