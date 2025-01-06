@@ -145,8 +145,8 @@ SELECT
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.platform') as destination_platform,
     CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)) AS num_stops
 FROM CIF_FULL_DAILY_SCHEDULE_JSON
-         LEFT JOIN FLINK_LOCATIONS T_SRC
+         LEFT JOIN LOCATIONS T_SRC
                    ON JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[1],'$.tiploc_code') = T_SRC.tiploc
-         LEFT JOIN FLINK_LOCATIONS T_DST
+         LEFT JOIN LOCATIONS T_DST
                    ON JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.tiploc_code') = T_DST.tiploc
 ;
