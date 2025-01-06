@@ -1,6 +1,6 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
-CREATE TABLE FLINK_TRAIN_DESCRIBERS
+CREATE TABLE TRAIN_DESCRIBERS
 AS
 WITH TD AS (
     select json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `TD_ALL_SIG_AREA`

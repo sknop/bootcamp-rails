@@ -1,6 +1,6 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
-CREATE TABLE FLINK_SCHEDULE (
+CREATE TABLE SCHEDULE (
                                 schedule_key STRING,
                                 train_status STRING,
                                 power_type STRING,

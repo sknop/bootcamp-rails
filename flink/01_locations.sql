@@ -1,6 +1,6 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
-CREATE TABLE FLINK_LOCATIONS (
+CREATE TABLE LOCATIONS (
                                  `tiploc` STRING,
                                  `name` STRING,
                                  `description` STRING,

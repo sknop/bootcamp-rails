@@ -6,10 +6,6 @@ output "schema-registry" {
   value = data.confluent_schema_registry_cluster.essentials.rest_endpoint
 }
 
-output "ksql-server" {
-  value = confluent_ksql_cluster.bootcamp.rest_endpoint
-}
-
 output "flink-compute-pool" {
   value = confluent_flink_compute_pool.main.resource_name
 }

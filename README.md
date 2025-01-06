@@ -16,7 +16,8 @@ This is a terraform script that will
 - Configure two connectors
   - HttpCompressedSource for the locations and schedule data
   - ActiveMQSource for the train movement updates
-- Create a KSQL cluster
+- Create a Flink compute pool
+- Run the Flink statements required to pre-process all events for consumption
 
 ### Preparation
 
@@ -46,6 +47,5 @@ select FORMAT_TIMESTAMP(FROM_UNIXTIME(actual_timestamp) , 'yyyy-MM-dd HH:mm:ss')
 
 ### More details to follow (TODO)
 
-- Finish uploading of KSQL statements
 - Add student user management (take from bootcamp-streams)
 - Labs
