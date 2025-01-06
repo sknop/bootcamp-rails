@@ -43,7 +43,7 @@ Replace: \1|\2|\3
 
 ### Possible queries
 
-select FORMAT_TIMESTAMP(FROM_UNIXTIME(actual_timestamp) , 'yyyy-MM-dd HH:mm:ss') TIMESTAMP, event_type,  MVT_DESCRIPTION ,  PLATFORM, VARIATION_STATUS, TOC from train_movements;
+select `timestamp`, event_type,  mvt_description , platform, variation_status, toc from TRAIN_MOVEMENTS;
 
 ### More details to follow (TODO)
 
