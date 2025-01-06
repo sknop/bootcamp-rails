@@ -57,6 +57,11 @@ resource "confluent_api_key" "flink-api-key" {
   ]
 }
 
+locals {
+  flink_api_key = confluent_api_key.flink-api-key.id
+  flink_api_secret = confluent_api_key.flink-api-key.secret
+}
+
 data "confluent_organization" "bootcamp" {
 }
 

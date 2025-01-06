@@ -23,12 +23,21 @@ output "app-manager-api-secret" {
   sensitive = true
 }
 
-output "Schema-Key" {
+output "schema-key" {
   value = local.schema_api_key
 }
 
-output "Schema-Secret" {
+output "schema-secret" {
   value = local.schema_secret
+  sensitive = true
+}
+
+output "flink-key" {
+  value = local.flink_api_key
+}
+
+output "flink-secret" {
+  value = local.flink_api_secret
   sensitive = true
 }
 
