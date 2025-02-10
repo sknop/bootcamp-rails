@@ -38,11 +38,6 @@ variable "flink_pool_name" {
   default = "rails_pool"
 }
 
-variable "confluent_env_id" {
-  type    = string
-  default = ""
-}
-
 variable "confluent_custom_connection_endpoints" {
   type = string
   default = ""
