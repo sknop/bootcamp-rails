@@ -1,5 +1,5 @@
 resource "confluent_flink_compute_pool" "main" {
-  display_name     = "rails_pool"
+  display_name     = var.flink_pool_name
   cloud            = "AWS"
   region           = var.confluent_region
   max_cfu          = 20

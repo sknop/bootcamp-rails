@@ -12,7 +12,7 @@ resource "confluent_kafka_cluster" "bootcamp" {
 }
 
 resource "confluent_service_account" "app-manager" {
-  display_name = "app-manager"
+  display_name = var.bootcamp-app-manager
   description  = "Service account to manage 'bootcamp' Kafka cluster"
 }
 

@@ -28,6 +28,16 @@ variable "confluent_cluster" {
   type = string
 }
 
+variable "bootcamp-app-manager" {
+  type = string
+  default = "bootcamp-app-manager"
+}
+
+variable "flink_pool_name" {
+  type = string
+  default = "rails_pool"
+}
+
 variable "confluent_env_id" {
   type    = string
   default = ""

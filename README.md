@@ -22,6 +22,17 @@ This is a terraform script that will
 ### Preparation
 
 Add a `terraform.tfvars` file with target locations and credentials. 
+
+Add
+
+    cif_total_http_url = https://publicdatafeeds.networkrail.co.uk/ntrod/CifFileAuthenticate?type=CIF_ALL_FULL_DAILY&day=toc-full
+
+You might also want to override
+
+    confluent_region (default "eu-west-1")
+    confluent_environment (default "stream_bootcamp")
+    confluent_cluster (default "rails")
+
 I tend to add a file called .envrc (using direnv) that contains my actual credentials (such as API Key and Secret) so that I can use these from the command line as well.
 
 You will need to define the following variables in your shell or the equivalent in your `terraform.tfvars` file before running :
