@@ -7,7 +7,7 @@ resource "confluent_kafka_cluster" "bootcamp" {
   standard {}
 
   environment {
-    id = confluent_environment.stream_bootcamp.id
+    id = confluent_environment.rails_environment.id
   }
 }
 
@@ -37,7 +37,7 @@ resource "confluent_api_key" "app-manager-kafka-api-key" {
     kind        = confluent_kafka_cluster.bootcamp.kind
 
     environment {
-      id = confluent_environment.stream_bootcamp.id
+      id = confluent_environment.rails_environment.id
     }
   }
   # The goal is to ensure that confluent_role_binding.app-manager-kafka-cluster-admin is created before

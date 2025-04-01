@@ -13,7 +13,7 @@ provider "confluent" {
   cloud_api_secret = var.confluent_api_secret
 }
 
-resource "confluent_environment" "stream_bootcamp" {
+resource "confluent_environment" "rails_environment" {
   display_name = var.confluent_environment
 
   stream_governance {

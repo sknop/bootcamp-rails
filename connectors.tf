@@ -60,7 +60,7 @@ resource "confluent_kafka_acl" "app-connector-write-on-TD_ALL_SIG_AREA-topic" {
 
 resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
   environment {
-    id = confluent_environment.stream_bootcamp.id
+    id = confluent_environment.rails_environment.id
   }
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
@@ -92,7 +92,7 @@ resource "confluent_connector" "NETWORKRAIL_TRAIN_MVT_ALL_TOC" {
 
 resource "confluent_connector" "TD_ALL_SIG_AREA" {
   environment {
-    id = confluent_environment.stream_bootcamp.id
+    id = confluent_environment.rails_environment.id
   }
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
@@ -124,7 +124,7 @@ resource "confluent_connector" "TD_ALL_SIG_AREA" {
 
 resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
   environment {
-    id = confluent_environment.stream_bootcamp.id
+    id = confluent_environment.rails_environment.id
   }
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id

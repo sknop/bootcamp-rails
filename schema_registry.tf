@@ -12,7 +12,7 @@ resource "confluent_role_binding" "schema-registry-resource-owner" {
 
 data "confluent_schema_registry_cluster" "essentials" {
   environment {
-    id = confluent_environment.stream_bootcamp.id
+    id = confluent_environment.rails_environment.id
   }
 
   depends_on = [
@@ -35,7 +35,7 @@ resource "confluent_api_key" "bootcamp-schema-registry-api-key" {
     kind        = data.confluent_schema_registry_cluster.essentials.kind
 
     environment {
-      id = confluent_environment.stream_bootcamp.id
+      id = confluent_environment.rails_environment.id
     }
   }
 
