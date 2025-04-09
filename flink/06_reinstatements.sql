@@ -57,7 +57,7 @@ select
     SCH.destination_public_arrival_time                                 AS destination_public_arrival_time,
     SCH.destination_platform                                            AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
+                      JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF `TRAIN_MOVEMENT`.`$rowtime` AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
                       LEFT JOIN LOCATIONS L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-                      JOIN SCHEDULE SCH ON TA.schedule_key = SCH.schedule_key
+                      JOIN SCHEDULE FOR SYSTEM_TIME AS OF TA.`$rowtime` AS SCH ON TA.schedule_key = SCH.schedule_key
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0005';

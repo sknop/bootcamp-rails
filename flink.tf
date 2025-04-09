@@ -234,11 +234,7 @@ resource "confluent_flink_statement" "flink_tiploc_code" {
         JSON_VALUE(tiploc,'$.crs_code') AS crs_code,
         JSON_VALUE(tiploc,'$.description') AS `description`,
         JSON_VALUE(tiploc,'$.tps_description') AS tps_description
-    FROM CIF_FULL_DAILY_TIPLOC_JSON/*+ OPTIONS(
-       'scan.startup.mode' = 'specific-offsets',
-       'scan.startup.specific-offsets' = 'partition:0,offset:0',
-       'scan.bounded.mode' = 'specific-offsets',
-       'scan.bounded.specific-offsets' = 'partition:0,offset:${local.toc-offset}') */
+    FROM CIF_FULL_DAILY_TIPLOC_JSON
     ;
   EOT
 
