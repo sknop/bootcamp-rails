@@ -3,7 +3,7 @@
 CREATE TABLE TRAIN_REINSTATEMENTS
 AS
 WITH `TRAIN_MOVEMENT` AS (
-    SELECT json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+    SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
 )
 select
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
