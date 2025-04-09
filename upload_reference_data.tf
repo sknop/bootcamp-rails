@@ -15,7 +15,11 @@ variable "cancellation_reasons" {
 }
 
 locals {
-  upload-jar-file = "lib/CSVFileAvroUploader-1.0.2.jar"
+  upload-jar-file = "lib/CSVFileAvroUploader-1.1.1.jar"
+}
+
+locals {
+  locations-output-file = "locations_output.json"
 }
 
 resource "null_resource" "ukrail_locations_upload" {
@@ -28,6 +32,7 @@ resource "null_resource" "ukrail_locations_upload" {
         --topic ${confluent_kafka_topic.LOCATIONS_RAW.topic_name} \
         --key-field location_id \
         -s LocationRaw \
+        --output-file ${local.locations-output-file} \
         -n io.confluent.bootcamp.rails.schema
     EOT
   }
@@ -35,6 +40,16 @@ resource "null_resource" "ukrail_locations_upload" {
   depends_on = [
     confluent_kafka_topic.LOCATIONS_RAW
   ]
+}
+
+data "external" "locations-offset" {
+  program = [ "cat", "${local.locations-output-file}" ]
+
+  depends_on = [ null_resource.ukrail_locations_upload ]
+}
+
+locals {
+  locations-offset = tonumber(data.external.locations-offset.result.offset)
 }
 
 #resource "null_resource" "canx_reason_code_upload" {
@@ -47,6 +62,10 @@ resource "null_resource" "ukrail_locations_upload" {
 #  ]
 #}
 
+locals {
+  cancellation-reason-output-file = "canx_reason_output.json"
+}
+
 resource "null_resource" "cancellation_reason_code_upload" {
   provisioner "local-exec" {
     command = <<EOT
@@ -58,6 +77,7 @@ resource "null_resource" "cancellation_reason_code_upload" {
         --key-field canx_reason_code \
         -s CancellationReasonCode  \
         -n io.confluent.bootcamp.rails.schema \
+        --output-file ${local.cancellation-reason-output-file} \
         --separator '|'
     EOT
   }
@@ -65,6 +85,20 @@ resource "null_resource" "cancellation_reason_code_upload" {
   depends_on = [
     confluent_kafka_topic.CANX_REASON_CODE
   ]
+}
+
+data "external" "canx-offset" {
+  program = [ "cat", "${local.cancellation-reason-output-file}" ]
+
+  depends_on = [ null_resource.cancellation_reason_code_upload ]
+}
+
+locals {
+  cancellation-reasons-offset = tonumber(data.external.canx-offset.result.offset)
+}
+
+locals {
+  toc-code-output-file = "toc_code_output.json"
 }
 
 resource "null_resource" "toc_upload" {
@@ -77,6 +111,7 @@ resource "null_resource" "toc_upload" {
         --topic ${confluent_kafka_topic.TOC_CODES.topic_name} \
         --key-field toc_id \
         -s TocCode \
+        --output-file ${local.toc-code-output-file} \
         -n io.confluent.bootcamp.rails.schema
     EOT
   }
@@ -84,4 +119,14 @@ resource "null_resource" "toc_upload" {
   depends_on = [
     confluent_kafka_topic.TOC_CODES
   ]
+}
+
+data "external" "toc-offset" {
+  program = [ "cat", "${local.toc-code-output-file}" ]
+
+  depends_on = [ null_resource.toc_upload ]
+}
+
+locals {
+  toc-offset = tonumber(data.external.toc-offset.result.offset)
 }
