@@ -24,9 +24,6 @@ resource "confluent_role_binding" "app-flink" {
   crn_pattern = confluent_environment.rails_environment.resource_name
 }
 
-# TODO
-# This is a hack to get things working, need to narrow permissions down to bare minimum later
-
 resource "confluent_role_binding" "app-flink-kafka-cluster-admin" {
   principal   = "User:${confluent_service_account.app-flink.id}"
   role_name   = "CloudClusterAdmin"
@@ -209,7 +206,41 @@ resource "confluent_flink_statement" "flink_schedule" {
 }
 
 resource "confluent_flink_statement" "flink_tiploc_code" {
-  statement = file("flink/02A_tiploc_code.sql")
+  statement = <<EOT
+    CREATE TABLE TIPLOC (
+                            tiploc_code STRING,
+                            nalco STRING,
+                            stanox STRING,
+                            crs_code STRING,
+                            `description` STRING,
+                            tps_description STRING,
+                            PRIMARY KEY (tiploc_code) NOT ENFORCED
+    )
+        WITH (
+            'changelog.mode' = 'upsert',
+            'kafka.cleanup-policy' = 'compact',
+            'kafka.retention.time' = '0'
+            )
+    AS
+        WITH CIF_FULL_DAILY_TIPLOC_JSON AS (
+            SELECT JSON_QUERY(CAST(val as STRING),'$.TiplocV1') as tiploc FROM `CIF_FULL_DAILY`
+        WHERE
+        JSON_QUERY(CAST(val as STRING),'$.TiplocV1') IS NOT NULL
+        )
+    SELECT
+        COALESCE(JSON_VALUE(tiploc,'$.tiploc_code'),'No TIPLOC Code') AS tiploc_code,
+        JSON_VALUE(tiploc,'$.naloc') AS nalco,
+        JSON_VALUE(tiploc,'$.stanox') AS stanox,
+        JSON_VALUE(tiploc,'$.crs_code') AS crs_code,
+        JSON_VALUE(tiploc,'$.description') AS `description`,
+        JSON_VALUE(tiploc,'$.tps_description') AS tps_description
+    FROM CIF_FULL_DAILY_TIPLOC_JSON/*+ OPTIONS(
+       'scan.startup.mode' = 'specific-offsets',
+       'scan.startup.specific-offsets' = 'partition:0,offset:0',
+       'scan.bounded.mode' = 'specific-offsets',
+       'scan.bounded.specific-offsets' = 'partition:0,offset:${local.toc-offset}') */
+    ;
+  EOT
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
