@@ -6,9 +6,9 @@ variable "toc_codes" {
   default = "data/toc_codes.csv"
 }
 
-variable "canx_reasons" {
-  default = "data/canx_reason_code.dat"
-}
+# variable "canx_reasons" {
+#   default = "data/canx_reason_code.dat"
+# }
 
 variable "cancellation_reasons" {
   default = "data/canx_reason_code.csv"
