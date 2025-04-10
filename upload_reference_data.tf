@@ -87,16 +87,6 @@ resource "null_resource" "cancellation_reason_code_upload" {
   ]
 }
 
-data "external" "canx-offset" {
-  program = [ "cat", "${local.cancellation-reason-output-file}" ]
-
-  depends_on = [ null_resource.cancellation_reason_code_upload ]
-}
-
-locals {
-  cancellation-reasons-offset = tonumber(data.external.canx-offset.result.offset)
-}
-
 locals {
   toc-code-output-file = "toc_code_output.json"
 }
@@ -119,14 +109,4 @@ resource "null_resource" "toc_upload" {
   depends_on = [
     confluent_kafka_topic.TOC_CODES
   ]
-}
-
-data "external" "toc-offset" {
-  program = [ "cat", "${local.toc-code-output-file}" ]
-
-  depends_on = [ null_resource.toc_upload ]
-}
-
-locals {
-  toc-offset = tonumber(data.external.toc-offset.result.offset)
 }
