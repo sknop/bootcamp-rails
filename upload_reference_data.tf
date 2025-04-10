@@ -15,7 +15,7 @@ variable "cancellation_reasons" {
 }
 
 locals {
-  upload-jar-file = "lib/CSVFileAvroUploader-1.1.2.jar"
+  upload-jar-file = "lib/CSVFileAvroUploader-1.1.3.jar"
 }
 
 locals {
