@@ -97,10 +97,9 @@ resource "confluent_flink_statement" "flink_locations" {
           isOffNetwork AS is_off_network,
           timingPointType as timing_point_type
       FROM LOCATIONS_RAW /*+ OPTIONS(
-       'scan.startup.mode' = 'specific-offsets',
-       'scan.startup.specific-offsets' = 'partition:0,offset:0',
+       'scan.startup.mode' = 'earliest-offset',
        'scan.bounded.mode' = 'specific-offsets',
-       'scan.bounded.specific-offsets' = 'partition:0,offset:${local.locations-offset}') */
+       'scan.bounded.specific-offsets' = ${local.locations_partitions}') */
       WHERE `tiploc` <> '';
 EOT
 

@@ -42,25 +42,14 @@ resource "null_resource" "ukrail_locations_upload" {
   ]
 }
 
-data "external" "locations-offset" {
-  program = [ "cat", "${local.locations-output-file}" ]
-
+data "local_file" "locations-offset" {
+  filename = local.locations-output-file
   depends_on = [ null_resource.ukrail_locations_upload ]
 }
 
 locals {
-  locations-offset = tonumber(data.external.locations-offset.result.offset)
+  locations_partitions = join(";", [ for part,offset in jsondecode(data.local_file.locations-offset).offset : "partition:${part},offset=${offset}" ])
 }
-
-#resource "null_resource" "canx_reason_code_upload" {
-#  provisioner "local-exec" {
-#    command = "kcat -F ${var.kcat-properties} -P -t ${confluent_kafka_topic.CANX_REASON_CODE.topic_name} -K: -l ${var.canx_reasons}"
-#  }
-#
-#  depends_on = [
-#    confluent_kafka_topic.CANX_REASON_CODE
-#  ]
-#}
 
 locals {
   cancellation-reason-output-file = "canx_reason_output.json"
