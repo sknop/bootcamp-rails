@@ -48,7 +48,7 @@ data "local_file" "locations-offset" {
 }
 
 locals {
-  locations_partitions = join(";", [ for part,offset in jsondecode(data.local_file.locations-offset.content).offset : "partition:${part},offset=${offset}" ])
+  locations_partitions = join(";", [ for part,offset in jsondecode(data.local_file.locations-offset.content).offset : "partition:${part},offset:${offset}" ])
 }
 
 locals {
