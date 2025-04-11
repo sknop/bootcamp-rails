@@ -99,7 +99,7 @@ resource "confluent_flink_statement" "flink_locations" {
       FROM LOCATIONS_RAW /*+ OPTIONS(
        'scan.startup.mode' = 'earliest-offset',
        'scan.bounded.mode' = 'specific-offsets',
-       'scan.bounded.specific-offsets' = ${local.locations_partitions}') */
+       'scan.bounded.specific-offsets' = '${local.locations_partitions}') */
       WHERE `tiploc` <> '';
 EOT
 
