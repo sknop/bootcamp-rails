@@ -1,11 +1,83 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
-CREATE TABLE TRAIN_MOVEMENTS
-AS
-WITH `TRAIN_MOVEMENT` AS (
-    SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+CREATE TABLE TRAIN_MOVEMENTS (
+                                     `msg_key` VARCHAR(2147483647) NOT NULL,
+                                     `msg_queue_timestamp` TIMESTAMP(3) WITH LOCAL TIME ZONE,
+                                     `msg_type` VARCHAR(2147483647),
+                                     `original_data_source` VARCHAR(2147483647),
+                                     `source_system_id` VARCHAR(2147483647),
+                                     `actual_timestamp` TIMESTAMP(3) WITH LOCAL TIME ZONE,
+                                     `auto_expected` VARCHAR(2147483647),
+                                     `correction_ind` VARCHAR(2147483647),
+                                     `delay_monitoring_point` VARCHAR(2147483647),
+                                     `direction_ind` VARCHAR(2147483647),
+                                     `division_code` VARCHAR(2147483647),
+                                     `event_source` VARCHAR(2147483647),
+                                     `event_type` VARCHAR(2147483647),
+                                     `gbtt_timestamp` TIMESTAMP(3) WITH LOCAL TIME ZONE,
+                                     `late_ind` INT,
+                                     `loc_stanox` VARCHAR(2147483647),
+                                     `mvt_description` VARCHAR(2147483647),
+                                     `mvt_lat_lon` ROW<`lat` DOUBLE, `lon` DOUBLE>,
+                                     `next_report_run_time` VARCHAR(2147483647),
+                                     `next_report_stanox` VARCHAR(2147483647),
+                                     `offroute_ind` VARCHAR(2147483647),
+                                     `planned_event_type` VARCHAR(2147483647),
+                                     `planned_timestamp` TIMESTAMP(3) WITH LOCAL TIME ZONE,
+                                     `platform` VARCHAR(2147483647),
+                                     `reporting_stanox` VARCHAR(2147483647),
+                                     `route` VARCHAR(2147483647),
+                                     `timetable_variation` VARCHAR(2147483647),
+                                     `toc_id` VARCHAR(2147483647),
+                                     `toc` VARCHAR(2147483647),
+                                     `train_id` VARCHAR(2147483647),
+                                     `train_service_code` VARCHAR(2147483647),
+                                     `train_terminated` VARCHAR(2147483647),
+                                     `variation_status` VARCHAR(2147483647),
+                                     `variation` VARCHAR(2147483647),
+                                     `schedule_source` VARCHAR(2147483647),
+                                     `tp_origin_timestamp` DATE,
+                                     `schedule_type` VARCHAR(2147483647),
+                                     `creation_timestamp` TIMESTAMP(6) WITH LOCAL TIME ZONE,
+                                     `origin_dep_timestamp` TIMESTAMP(6) WITH LOCAL TIME ZONE,
+                                     `d1266_record_number` VARCHAR(2147483647),
+                                     `train_service_code_02` VARCHAR(2147483647),
+                                     `sched_origin_stanox` VARCHAR(2147483647),
+                                     `train_uid` VARCHAR(2147483647),
+                                     `train_call_mode` VARCHAR(2147483647),
+                                     `tp_origin_stanox` VARCHAR(2147483647),
+                                     `schedule_wtt_id` VARCHAR(2147483647),
+                                     `train_call_type` VARCHAR(2147483647),
+                                     `schedule_end_date` DATE,
+                                     `schedule_key` VARCHAR(2147483647) NOT NULL,
+                                     `sched_origin_desc` VARCHAR(2147483647),
+                                     `schedule_num_stops` INT,
+                                     `train_status` VARCHAR(2147483647),
+                                     `power_type` VARCHAR(2147483647),
+                                     `seating_classes` VARCHAR(2147483647),
+                                     `reservations` VARCHAR(2147483647),
+                                     `sleeping_accomodation` VARCHAR(2147483647),
+                                     `train_category` VARCHAR(2147483647),
+                                     `origin_tiploc_code` VARCHAR(2147483647),
+                                     `origin_description` VARCHAR(2147483647),
+                                     `origin_lat_lon` ROW<`lat` DOUBLE, `lon` DOUBLE>,
+                                     `origin_public_departure_time` VARCHAR(2147483647),
+                                     `origin_platform` VARCHAR(2147483647),
+                                     `destination_tiploc_code` VARCHAR(2147483647),
+                                     `destination_description` VARCHAR(2147483647),
+                                     `destination_lat_lon` ROW<`lat` DOUBLE, `lon` DOUBLE>,
+                                     `destination_public_arrival_time` VARCHAR(2147483647),
+                                     `destination_platform` VARCHAR(2147483647),
+                                     PRIMARY KEY (`msg_key`) NOT ENFORCED
 )
-select
+    WITH (
+        'changelog.mode' = 'upsert'
+        )
+AS
+    WITH `TRAIN_MOVEMENT` AS (
+        SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+    )
+select /*+ STATE_TTL('TA'='1d') */
     CONCAT_WS('/',
               COALESCE(JSON_VALUE(message, '$.body.train_id'),''),
               COALESCE(JSON_VALUE(message, '$.body.planned_event_type'),''),
@@ -69,25 +141,24 @@ select
     TA.schedule_end_date                                                AS schedule_end_date,
     coalesce(TA.schedule_key,'no_schedule_activation_found')            AS schedule_key,
     TA.sched_origin_desc                                                AS sched_origin_desc,
-    SCH.num_stops                                                       AS schedule_num_stops,
-    SCH.train_status                                                    AS train_status,
-    SCH.power_type                                                      AS power_type,
-    SCH.seating_classes                                                 AS seating_classes,
-    SCH.reservations                                                    AS reservations,
-    SCH.sleeping_accomodation                                           AS sleeping_accomodation,
-    SCH.train_category                                                  AS train_category,
-    SCH.origin_tiploc_code                                              AS origin_tiploc_code,
-    SCH.origin_description                                              AS origin_description,
-    SCH.origin_lat_lon                                                  AS origin_lat_lon,
-    SCH.origin_public_departure_time                                    AS origin_public_departure_time,
-    SCH.origin_platform                                                 AS origin_platform,
-    SCH.destination_tiploc_code                                         AS destination_tiploc_code,
-    SCH.destination_description                                         AS destination_description,
-    SCH.destination_lat_lon                                             AS destination_lat_lon,
-    SCH.destination_public_arrival_time                                 AS destination_public_arrival_time,
-    SCH.destination_platform                                            AS destination_platform
+    TA.schedule_num_stops                                               AS schedule_num_stops,
+    TA.train_status                                                     AS train_status,
+    TA.power_type                                                       AS power_type,
+    TA.seating_classes                                                  AS seating_classes,
+    TA.reservations                                                     AS reservations,
+    TA.sleeping_accomodation                                            AS sleeping_accomodation,
+    TA.train_category                                                   AS train_category,
+    TA.origin_tiploc_code                                               AS origin_tiploc_code,
+    TA.origin_description                                               AS origin_description,
+    TA.origin_lat_lon                                                   AS origin_lat_lon,
+    TA.origin_public_departure_time                                     AS origin_public_departure_time,
+    TA.origin_platform                                                  AS origin_platform,
+    TA.destination_tiploc_code                                          AS destination_tiploc_code,
+    TA.destination_description                                          AS destination_description,
+    TA.destination_lat_lon                                              AS destination_lat_lon,
+    TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
+    TA.destination_platform                                             AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF `TRAIN_MOVEMENT`.`$rowtime` AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
+                      JOIN TRAIN_NEW_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
                       LEFT JOIN LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-                      JOIN SCHEDULE FOR SYSTEM_TIME AS OF TA.`$rowtime` AS SCH ON TA.schedule_key = SCH.schedule_key
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0003';
