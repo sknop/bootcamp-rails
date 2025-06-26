@@ -5,7 +5,7 @@ AS
 WITH `TRAIN_MOVEMENT` AS (
     SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
 )
-select
+SELECT /*+ STATE_TTL('TA'='1d') */
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
     JSON_VALUE(message, '$.header.msg_type') msg_type,
     JSON_VALUE(message, '$.header.original_data_source') original_data_source,
@@ -41,26 +41,25 @@ select
     TA.schedule_end_date                                                AS schedule_end_date,
     coalesce(TA.schedule_key,'no_schedule_activation_found')            AS schedule_key,
     TA.sched_origin_desc                                                AS sched_origin_desc,
-    SCH.num_stops                                                       AS schedule_num_stops,
-    SCH.train_status                                                    AS train_status,
-    SCH.power_type                                                      AS power_type,
-    SCH.seating_classes                                                 AS seating_classes,
-    SCH.reservations                                                    AS reservations,
-    SCH.sleeping_accomodation                                           AS sleeping_accomodation,
-    SCH.train_category                                                  AS train_category,
-    SCH.origin_tiploc_code                                              AS origin_tiploc_code,
-    SCH.origin_description                                              AS origin_description,
-    SCH.origin_lat_lon                                                  AS origin_lat_lon,
-    SCH.origin_public_departure_time                                    AS origin_public_departure_time,
-    SCH.origin_platform                                                 AS origin_platform,
-    SCH.destination_tiploc_code                                         AS destination_tiploc_code,
-    SCH.destination_description                                         AS destination_description,
-    SCH.destination_lat_lon                                             AS destination_lat_lon,
-    SCH.destination_public_arrival_time                                 AS destination_public_arrival_time,
-    SCH.destination_platform                                            AS destination_platform
+    TA.schedule_num_stops                                               AS schedule_num_stops,
+    TA.train_status                                                     AS train_status,
+    TA.power_type                                                       AS power_type,
+    TA.seating_classes                                                  AS seating_classes,
+    TA.reservations                                                     AS reservations,
+    TA.sleeping_accomodation                                            AS sleeping_accomodation,
+    TA.train_category                                                   AS train_category,
+    TA.origin_tiploc_code                                               AS origin_tiploc_code,
+    TA.origin_description                                               AS origin_description,
+    TA.origin_lat_lon                                                   AS origin_lat_lon,
+    TA.origin_public_departure_time                                     AS origin_public_departure_time,
+    TA.origin_platform                                                  AS origin_platform,
+    TA.destination_tiploc_code                                          AS destination_tiploc_code,
+    TA.destination_description                                          AS destination_description,
+    TA.destination_lat_lon                                              AS destination_lat_lon,
+    TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
+    TA.destination_platform                                             AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF `TRAIN_MOVEMENT`.`$rowtime` AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
+                      JOIN TRAIN_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
                       LEFT JOIN LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
                       JOIN CANX_REASON_CODE C  ON JSON_VALUE(message, '$.body.canx_reason_code') = C.canx_reason_code
-                      JOIN SCHEDULE FOR SYSTEM_TIME AS OF TA.`$rowtime` AS SCH ON TA.schedule_key = SCH.schedule_key
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0002';
