@@ -159,6 +159,6 @@ select /*+ STATE_TTL('TA'='1d') */
     TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
     TA.destination_platform                                             AS destination_platform
 FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_NEW_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
+                      JOIN TRAIN_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
                       LEFT JOIN LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
 WHERE JSON_VALUE(message, '$.header.msg_type') = '0003';
