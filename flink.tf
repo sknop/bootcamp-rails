@@ -103,6 +103,8 @@ resource "confluent_flink_statement" "flink_locations" {
       WHERE `tiploc` <> '';
 EOT
 
+  statement_name = "create-table-locations"
+
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
@@ -142,6 +144,7 @@ EOT
 
 resource "confluent_flink_statement" "flink_locations_by_stanox" {
   statement = file("flink/01A_locations_by_stanox.sql")
+  statement_name = "create-table-locations-by-stanox"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -174,6 +177,7 @@ resource "confluent_flink_statement" "flink_locations_by_stanox" {
 
 resource "confluent_flink_statement" "flink_schedule" {
   statement = file("flink/02_schedule.sql")
+  statement_name = "create-table-schedule"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -237,6 +241,8 @@ resource "confluent_flink_statement" "flink_tiploc_code" {
     ;
   EOT
 
+  statement_name = "create-table-tiploc"
+
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
@@ -269,6 +275,7 @@ resource "confluent_flink_statement" "flink_tiploc_code" {
 
 resource "confluent_flink_statement" "flink_activations" {
   statement = file("flink/03_activations.sql")
+  statement_name = "create-table-activations"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -302,6 +309,7 @@ resource "confluent_flink_statement" "flink_activations" {
 
 resource "confluent_flink_statement" "flink_movements" {
   statement = file("flink/04_movements.sql")
+  statement_name = "create-table-movements"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -335,6 +343,7 @@ resource "confluent_flink_statement" "flink_movements" {
 
 resource "confluent_flink_statement" "flink_cancellations" {
   statement = file("flink/05_cancellations.sql")
+  statement_name = "create-table-cancellations"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -368,6 +377,7 @@ resource "confluent_flink_statement" "flink_cancellations" {
 
 resource "confluent_flink_statement" "flink_reinstatements" {
   statement = file("flink/06_reinstatements.sql")
+  statement_name = "create-table-reinstatements"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
@@ -401,6 +411,7 @@ resource "confluent_flink_statement" "flink_reinstatements" {
 
 resource "confluent_flink_statement" "flink_train_describers" {
   statement = file("flink/07_train_describers.sql")
+  statement_name = "create-table-train-describers"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
