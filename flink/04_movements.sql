@@ -71,7 +71,9 @@ CREATE TABLE TRAIN_MOVEMENTS (
                                      PRIMARY KEY (`msg_key`) NOT ENFORCED
 )
     WITH (
-        'changelog.mode' = 'upsert'
+        'changelog.mode' = 'upsert',
+        'kafka.cleanup-policy' = 'delete',
+        'kafka.retention.time' = '7 days'
         )
 AS
     WITH `TRAIN_MOVEMENT` AS (
