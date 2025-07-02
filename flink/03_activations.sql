@@ -53,7 +53,7 @@ AS
     WITH `TRAIN_MOVEMENT` AS (
         SELECT json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
     )
-SELECT
+SELECT /*+ STATE_TTL('SCH'='1d') */
     COALESCE(JSON_VALUE(message, '$.body.train_id'),'No ID') train_id,
     CONCAT_WS('/',
               COALESCE(JSON_VALUE(message, '$.body.train_uid'),''),
