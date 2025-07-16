@@ -85,6 +85,6 @@ SELECT
     TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
     TA.destination_platform                                             AS destination_platform
 FROM `TRAIN_CANCELLATION_FROM_JSON` TCFJ
-  JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS TA ON TCFJ.train_id = TA.train_id
-  LEFT JOIN LOCATIONS_BY_STANOX FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS L ON TCFJ.loc_stanox = L.stanox
+  JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF TCFJ.ROWTIME AS TA ON TCFJ.train_id = TA.train_id
+  LEFT JOIN LOCATIONS_BY_STANOX FOR SYSTEM_TIME AS OF TCFJ.ROWTIME AS L ON TCFJ.loc_stanox = L.stanox
   JOIN CANX_REASON_CODE C  ON TCFJ.canx_reason_code = C.canx_reason_code;
