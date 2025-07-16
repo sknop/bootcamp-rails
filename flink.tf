@@ -427,7 +427,8 @@ resource "confluent_flink_statement" "flink_cancellations" {
 
   depends_on = [
     confluent_flink_statement.flink_activations,
-    confluent_flink_statement.flink_locations_by_stanox
+    confluent_flink_statement.flink_locations_by_stanox,
+    confluent_flink_statement.flink_cancellation_reasons
   ]
 }
 
