@@ -142,7 +142,7 @@ SELECT
     TMFJ.correction_ind,
     TMFJ.delay_monitoring_point,
     TMFJ.direction_ind,
-    TMFJ.ivision_code,
+    TMFJ.division_code,
     TMFJ.event_source,
     TMFJ.event_type,
     TMFJ.gbtt_timestamp,
