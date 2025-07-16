@@ -160,10 +160,11 @@ resource "confluent_flink_statement" "flink_cancellation_reasons" {
           canx_reason_code,
           canx_reason,
           canx_abbrev
-      FROM `CANX_REASON_CODE`;  /*+ OPTIONS(
+      FROM `CANX_REASON_CODE`  /*+ OPTIONS(
             'scan.startup.mode' = 'earliest-offset',
             'scan.bounded.mode' = 'specific-offsets',
             'scan.bounded.specific-offsets' = '${local.cancellations_partitions}') */
+      ;
 EOT
 
   statement_name = "create-table-cancellation-reasons"
