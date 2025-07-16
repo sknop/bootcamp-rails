@@ -76,6 +76,15 @@ resource "null_resource" "cancellation_reason_code_upload" {
   ]
 }
 
+data "local_file" "cancellations-offset" {
+  filename = local.cancellation-reason-output-file
+  depends_on = [ null_resource.cancellation_reason_code_upload]
+}
+
+locals {
+  cancellations_partitions = join(";", [ for part,offset in jsondecode(data.local_file.cancellations-offset.content).offset : "partition:${part},offset:${offset}" ])
+}
+
 locals {
   toc-code-output-file = "toc_code_output.json"
 }

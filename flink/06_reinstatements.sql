@@ -2,25 +2,46 @@
 
 CREATE TABLE TRAIN_REINSTATEMENTS
 AS
-WITH `TRAIN_MOVEMENT` AS (
-    SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
-)
-SELECT /*+ STATE_TTL('TA'='1d') */
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
-    JSON_VALUE(message, '$.header.msg_type') msg_type,
-    JSON_VALUE(message, '$.header.original_data_source') original_data_source,
-    JSON_VALUE(message, '$.header.source_system_id') source_system_id,
-    JSON_VALUE(message, '$.body.train_file_address') train_file_address,
-    JSON_VALUE(message, '$.body.train_service_code') train_service_code,
-    JSON_VALUE(message, '$.body.orig_loc_stanox') orig_loc_stanox,
-    JSON_VALUE(message, '$.body.toc_id') toc_id,
+WITH
+    `TRAIN_REINSTATEMENTS` AS (
+        SELECT `$rowtime` AS ROWTIME, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+    ),
+    `TRAIN_REINSTATEMENTS_FROM_JSON` AS (
+        SELECT
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
+            JSON_VALUE(message, '$.header.msg_type') msg_type,
+            JSON_VALUE(message, '$.header.original_data_source') original_data_source,
+            JSON_VALUE(message, '$.header.source_system_id') source_system_id,
+            JSON_VALUE(message, '$.body.train_file_address') train_file_address,
+            JSON_VALUE(message, '$.body.train_service_code') train_service_code,
+            JSON_VALUE(message, '$.body.orig_loc_stanox') orig_loc_stanox,
+            JSON_VALUE(message, '$.body.toc_id') toc_id,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.dep_timestamp') AS BIGINT),3) dep_timestamp,
+            JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.reinstatement_timestamp') AS BIGINT),3) reinstatement_timestamp,
+            JSON_VALUE(message, '$.body.train_id') train_id,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.orig_loc_timestamp') AS BIGINT),3) orig_loc_timestamp,
+            JSON_VALUE(message, '$.body.canx_type') canx_type,
+            ROWTIME
+        FROM `TRAIN_REINSTATEMENTS` CROSS JOIN UNNEST(`TEXT`) AS message
+        WHERE JSON_VALUE(message, '$.header.msg_type') = '0005'
+    )
+SELECT
+    TRFJ.msg_queue_timestamp,
+    TRFJ.msg_type,
+    TRFJ.original_data_source,
+    TRFJ.source_system_id,
+    TRFJ.train_file_address,
+    TRFJ.train_service_code,
+    TRFJ.orig_loc_stanox,
+    TRFJ.toc_id,
     TA.toc                                                              AS toc,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.dep_timestamp') AS BIGINT),3) dep_timestamp,
-    JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.reinstatement_timestamp') AS BIGINT),3) reinstatement_timestamp,
-    JSON_VALUE(message, '$.body.train_id') train_id,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.orig_loc_timestamp') AS BIGINT),3) orig_loc_timestamp,
-    JSON_VALUE(message, '$.body.canx_type') canx_type,
+    TRFJ.dep_timestamp,
+    TRFJ.loc_stanox,
+    TRFJ.reinstatement_timestamp,
+    TRFJ.train_id,
+    TRFJ.orig_loc_timestamp,
+    TRFJ.canx_type,
     L.description                                                       AS cancellation_location,
     L.lat_lon                                                           AS cancellation_lat_lon,
     TA.schedule_source                                                  AS schedule_source,
@@ -56,7 +77,6 @@ SELECT /*+ STATE_TTL('TA'='1d') */
     TA.destination_lat_lon                                              AS destination_lat_lon,
     TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
     TA.destination_platform                                             AS destination_platform
-FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
-                      LEFT JOIN LOCATIONS L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-WHERE JSON_VALUE(message, '$.header.msg_type') = '0005';
+FROM `TRAIN_REINSTATEMENTS_FROM_JSON` TRFJ
+    JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF TRFJ.ROWTIME AS TA ON TRFJ.train_id = TA.train_id
+    LEFT JOIN LOCATIONS_BY_STANOX FOR SYSTEM_TIME AS OF TRFJ.ROWTIME AS L ON TRFJ.loc_stanox = L.stanox;

@@ -142,6 +142,62 @@ EOT
   ]
 }
 
+resource "confluent_flink_statement" "flink_cancellation_reasons" {
+  statement = <<EOT
+      CREATE TABLE CANCELLATION_REASON (
+          `canx_reason_code` STRING NOT NULL,
+          `canx_reason` STRING NOT NULL,
+          `canx_abbrev` STRING NOT NULL,
+          CONSTRAINT `PRIMARY` PRIMARY KEY (`canx_reason_code`) NOT ENFORCED
+      )
+      WITH (
+          'changelog.mode' = 'upsert',
+          'kafka.cleanup-policy' = 'compact',
+          'kafka.retention.time' = '0'
+      )
+      AS
+      SELECT
+          canx_reason_code,
+          canx_reason,
+          canx_abbrev
+      FROM `CANX_REASON_CODE`;  /*+ OPTIONS(
+            'scan.startup.mode' = 'earliest-offset',
+            'scan.bounded.mode' = 'specific-offsets',
+            'scan.bounded.specific-offsets' = '${local.cancellations_partitions}') */
+EOT
+
+  statement_name = "create-table-cancellation-reasons"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.rails_environment.display_name
+    "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+  }
+
+  rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
+
+  organization {
+    id = data.confluent_organization.bootcamp.id
+  }
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.app-flink.id
+  }
+  credentials {
+    key    = confluent_api_key.flink-api-key.id
+    secret = confluent_api_key.flink-api-key.secret
+  }
+
+  depends_on = [
+    confluent_kafka_topic.CANX_REASON_CODE,
+    confluent_role_binding.app-flink-kafka-cluster-admin
+  ]
+}
+
 resource "confluent_flink_statement" "flink_locations_by_stanox" {
   statement = file("flink/01A_locations_by_stanox.sql")
   statement_name = "create-table-locations-by-stanox"

@@ -67,66 +67,103 @@ CREATE TABLE TRAIN_MOVEMENTS (
                                      `destination_description` STRING,
                                      `destination_lat_lon` ROW<`lat` DOUBLE, `lon` DOUBLE>,
                                      `destination_public_arrival_time` STRING,
-                                     `destination_platform` STRING,
-                                     PRIMARY KEY (`msg_key`) NOT ENFORCED
+                                     `destination_platform` STRING
 )
     WITH (
-        'changelog.mode' = 'upsert',
+        'changelog.mode' = 'append',
         'kafka.cleanup-policy' = 'delete',
         'kafka.retention.time' = '7 days'
         )
 AS
-    WITH `TRAIN_MOVEMENT` AS (
-        SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+    WITH
+        `TRAIN_MOVEMENT` AS (
+            SELECT `$rowtime` AS ROWTIME, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
+        ),
+        `TRAIN_MOVEMENT_FROM_JSON` AS (
+            SELECT CONCAT_WS('/',
+                COALESCE(JSON_VALUE(message, '$.body.train_id'),''),
+                COALESCE(JSON_VALUE(message, '$.body.planned_event_type'),''),
+                COALESCE(JSON_VALUE(message, '$.body.loc_stanox'),'')
+            ) AS msg_key,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
+            JSON_VALUE(message, '$.header.msg_type') msg_type,
+            JSON_VALUE(message, '$.header.original_data_source') original_data_source,
+            JSON_VALUE(message, '$.header.source_system_id') source_system_id,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.actual_timestamp') AS BIGINT),3) actual_timestamp,
+            JSON_VALUE(message, '$.body.auto_expected') auto_expected,
+            JSON_VALUE(message, '$.body.correction_ind') correction_ind,
+            JSON_VALUE(message, '$.body.delay_monitoring_point') delay_monitoring_point,
+            JSON_VALUE(message, '$.body.direction_ind') direction_ind,
+            JSON_VALUE(message, '$.body.division_code') division_code,
+            JSON_VALUE(message, '$.body.event_source') event_source,
+            JSON_VALUE(message, '$.body.event_type') event_type,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.gbtt_timestamp') AS BIGINT),3) gbtt_timestamp,
+            CASE
+                WHEN JSON_VALUE(message, '$.body.variation_status') = 'ON TIME' THEN 0
+                WHEN JSON_VALUE(message, '$.body.variation_status') = 'LATE' THEN 1
+                WHEN JSON_VALUE(message, '$.body.variation_status') = 'EARLY' THEN 0
+            END AS late_ind,
+            JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
+            JSON_VALUE(message, '$.body.next_report_run_time') next_report_run_time,
+            JSON_VALUE(message, '$.body.next_report_stanox') next_report_stanox,
+            JSON_VALUE(message, '$.body.offroute_ind') offroute_ind,
+            JSON_VALUE(message, '$.body.planned_event_type') planned_event_type,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.planned_timestamp') AS BIGINT),3) planned_timestamp,
+            CASE
+                WHEN CHAR_LENGTH(JSON_VALUE(message,'$.body.platform')) > 0
+                THEN CONCAT('Platform ', JSON_VALUE(message,'$.body.platform'))
+                ELSE ''
+            END AS platform,
+            JSON_VALUE(message, '$.body.reporting_stanox') reporting_stanox,
+            JSON_VALUE(message, '$.body.route') route,
+            JSON_VALUE(message, '$.body.timetable_variation') timetable_variation,
+            JSON_VALUE(message, '$.body.toc_id') toc_id,
+            JSON_VALUE(message, '$.body.train_id') train_id,
+            JSON_VALUE(message, '$.body.train_service_code') train_service_code,
+            JSON_VALUE(message, '$.body.train_terminated') train_terminated,
+            JSON_VALUE(message, '$.body.variation_status') variation_status,
+            CASE WHEN JSON_VALUE(message, '$.body.variation_status') = 'ON TIME' THEN 'ON TIME'
+                WHEN JSON_VALUE(message, '$.body.variation_status') = 'LATE' THEN CONCAT(JSON_VALUE(message, '$.body.timetable_variation'), ' MINS LATE')
+                WHEN JSON_VALUE(message, '$.body.variation_status') = 'EARLY' THEN CONCAT(JSON_VALUE(message, '$.body.timetable_variation'), ' MINS EARLY')
+            END AS variation
+            FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
+            WHERE JSON_VALUE(message, '$.header.msg_type') = '0003'
     )
-select /*+ STATE_TTL('TA'='1d') */
-    CONCAT_WS('/',
-              COALESCE(JSON_VALUE(message, '$.body.train_id'),''),
-              COALESCE(JSON_VALUE(message, '$.body.planned_event_type'),''),
-              COALESCE(JSON_VALUE(message, '$.body.loc_stanox'),'')
-    ) AS msg_key,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
-    JSON_VALUE(message, '$.header.msg_type') msg_type,
-    JSON_VALUE(message, '$.header.original_data_source') original_data_source,
-    JSON_VALUE(message, '$.header.source_system_id') source_system_id,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.actual_timestamp') AS BIGINT),3) actual_timestamp,
-    JSON_VALUE(message, '$.body.auto_expected') auto_expected,
-    JSON_VALUE(message, '$.body.correction_ind') correction_ind,
-    JSON_VALUE(message, '$.body.delay_monitoring_point') delay_monitoring_point,
-    JSON_VALUE(message, '$.body.direction_ind') direction_ind,
-    JSON_VALUE(message, '$.body.division_code') division_code,
-    JSON_VALUE(message, '$.body.event_source') event_source,
-    JSON_VALUE(message, '$.body.event_type') event_type,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.gbtt_timestamp') AS BIGINT),3) gbtt_timestamp,
-    CASE WHEN JSON_VALUE(message, '$.body.variation_status') = 'ON TIME' THEN 0
-         WHEN JSON_VALUE(message, '$.body.variation_status') = 'LATE' THEN 1
-         WHEN JSON_VALUE(message, '$.body.variation_status') = 'EARLY' THEN 0
-        END AS late_ind,
-    JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
-    L.description                                                       AS mvt_description,
-    L.lat_lon                                                           AS mvt_lat_lon,
-    JSON_VALUE(message, '$.body.next_report_run_time') next_report_run_time,
-    JSON_VALUE(message, '$.body.next_report_stanox') next_report_stanox,
-    JSON_VALUE(message, '$.body.offroute_ind') offroute_ind,
-    JSON_VALUE(message, '$.body.planned_event_type') planned_event_type,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.planned_timestamp') AS BIGINT),3) planned_timestamp,
-    CASE WHEN CHAR_LENGTH(JSON_VALUE(message,'$.body.platform')) > 0
-             THEN CONCAT('Platform ', JSON_VALUE(message,'$.body.platform'))
-         ELSE ''
-        END AS platform,
-    JSON_VALUE(message, '$.body.reporting_stanox') reporting_stanox,
-    JSON_VALUE(message, '$.body.route') route,
-    JSON_VALUE(message, '$.body.timetable_variation') timetable_variation,
-    JSON_VALUE(message, '$.body.toc_id') toc_id,
+SELECT
+    TMFJ.msg_key,
+    TMFJ.msg_queue_timestamp,
+    TMFJ.msg_type,
+    TMFJ.original_data_source,
+    TMFJ.source_system_id,
+    TMFJ.actual_timestamp,
+    TMFJ.auto_expected,
+    TMFJ.correction_ind,
+    TMFJ.delay_monitoring_point,
+    TMFJ.direction_ind,
+    TMFJ.ivision_code,
+    TMFJ.event_source,
+    TMFJ.event_type,
+    TMFJ.gbtt_timestamp,
+    TMFJ.late_ind,
+    TMFJ.loc_stanox,
+    TMFJ.mvt_description,
+    TMFJ.mvt_lat_lon,
+    TMFJ.next_report_run_time,
+    TMFJ.next_report_stanox,
+    TMFJ.offroute_ind,
+    TMFJ.planned_event_type,
+    TMFJ.planned_timestamp,
+    TMFJ.platform,
+    TMFJ.reporting_stanox,
+    TMFJ.route,
+    TMFJ.timetable_variation,
+    TMFJ.toc_id,
     TA.toc                                                              AS toc,
-    JSON_VALUE(message, '$.body.train_id') train_id,
-    JSON_VALUE(message, '$.body.train_service_code') train_service_code,
-    JSON_VALUE(message, '$.body.train_terminated') train_terminated,
-    JSON_VALUE(message, '$.body.variation_status') variation_status,
-    CASE WHEN JSON_VALUE(message, '$.body.variation_status') = 'ON TIME' THEN 'ON TIME'
-         WHEN JSON_VALUE(message, '$.body.variation_status') = 'LATE' THEN CONCAT(JSON_VALUE(message, '$.body.timetable_variation'), ' MINS LATE')
-         WHEN JSON_VALUE(message, '$.body.variation_status') = 'EARLY' THEN CONCAT(JSON_VALUE(message, '$.body.timetable_variation'), ' MINS EARLY')
-        END AS variation,
+    TMFJ.train_id,
+    TMFJ.train_service_code,
+    TMFJ.train_terminated,
+    TMFJ.variation_status,
+    TMFJ.variation,
     TA.schedule_source                                                  AS schedule_source,
     TA.tp_origin_timestamp                                              AS tp_origin_timestamp,
     TA.schedule_type                                                    AS schedule_type,
@@ -160,7 +197,6 @@ select /*+ STATE_TTL('TA'='1d') */
     TA.destination_lat_lon                                              AS destination_lat_lon,
     TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
     TA.destination_platform                                             AS destination_platform
-FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
-                      LEFT JOIN LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-WHERE JSON_VALUE(message, '$.header.msg_type') = '0003';
+FROM `TRAIN_MOVEMENT_FROM_JSON` TMFJ
+       JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS TA ON TMFJ.train_id = TA.train_id
+       LEFT JOIN LOCATIONS_BY_STANOX FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS L ON TMFJ.loc_stanox = L.stanox;

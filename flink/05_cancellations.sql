@@ -1,28 +1,54 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
 CREATE TABLE TRAIN_CANCELLATIONS
+    WITH (
+        'changelog.mode' = 'append',
+        'kafka.cleanup-policy' = 'delete',
+        'kafka.retention.time' = '7 days'
+    )
 AS
-WITH `TRAIN_MOVEMENT` AS (
-    SELECT `$rowtime`, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` from `NETWORKRAIL_TRAIN_MVT`
-)
-SELECT /*+ STATE_TTL('TA'='1d') */
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
-    JSON_VALUE(message, '$.header.msg_type') msg_type,
-    JSON_VALUE(message, '$.header.original_data_source') original_data_source,
-    JSON_VALUE(message, '$.header.source_system_id') source_system_id,
-    JSON_VALUE(message, '$.body.train_file_address') train_file_address,
-    JSON_VALUE(message, '$.body.train_service_code') train_service_code,
-    JSON_VALUE(message, '$.body.orig_loc_stanox') orig_loc_stanox,
-    JSON_VALUE(message, '$.body.toc_id') toc_id,
+WITH
+    `TRAIN_CANCELLATION` AS (
+        SELECT `$rowtime` AS ROWTIME, json_query(`text`, '$.*' RETURNING ARRAY<STRING>) `TEXT` FROM `NETWORKRAIL_TRAIN_MVT`),
+    `TRAIN_CANCELLATION_FROM_JSON` as (
+        SELECT
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
+            JSON_VALUE(message, '$.header.msg_type') msg_type,
+            JSON_VALUE(message, '$.header.original_data_source') original_data_source,
+            JSON_VALUE(message, '$.header.source_system_id') source_system_id,
+            JSON_VALUE(message, '$.body.train_file_address') train_file_address,
+            JSON_VALUE(message, '$.body.train_service_code') train_service_code,
+            JSON_VALUE(message, '$.body.orig_loc_stanox') orig_loc_stanox,
+            JSON_VALUE(message, '$.body.toc_id') toc_id,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.dep_timestamp') AS BIGINT),3) dep_timestamp,
+            JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.canx_timestamp') AS BIGINT),3) canx_timestamp,
+            JSON_VALUE(message, '$.body.canx_reason_code') canx_reason_code,
+            JSON_VALUE(message, '$.body.train_id') train_id,
+            TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.orig_loc_timestamp') AS BIGINT),3) orig_loc_timestamp,
+            JSON_VALUE(message, '$.body.canx_type') canx_type,
+            ROWTIME
+        FROM `TRAIN_CANCELLATION` CROSS JOIN UNNEST(`TEXT`) AS message
+        WHERE JSON_VALUE(message, '$.header.msg_type') = '0002'
+    )
+SELECT
+    TCFJ.msg_queue_timestamp,
+    TCFJ.msg_type,
+    TCFJ.original_data_source,
+    TCFJ.source_system_id,
+    TCFJ.train_file_address,
+    TCFJ.train_service_code,
+    TCFJ.orig_loc_stanox,
+    TCFJ.toc_id,
     TA.toc                                                              AS toc,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.dep_timestamp') AS BIGINT),3) dep_timestamp,
-    JSON_VALUE(message, '$.body.loc_stanox') loc_stanox,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.canx_timestamp') AS BIGINT),3) canx_timestamp,
-    JSON_VALUE(message, '$.body.canx_reason_code') canx_reason_code,
-    C.canx_reason                                    AS canx_reason,
-    JSON_VALUE(message, '$.body.train_id') train_id,
-    TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.orig_loc_timestamp') AS BIGINT),3) orig_loc_timestamp,
-    JSON_VALUE(message, '$.body.canx_type') canx_type,
+    TCFJ.dep_timestamp,
+    TCFJ.loc_stanox,
+    TCFJ.canx_timestamp,
+    TCFJ.canx_reason_code,
+    C.canx_reason                                                       AS canx_reason,
+    TCFJ.train_id,
+    TCFJ.orig_loc_timestamp,
+    TCFJ.canx_type,
     L.description                                                       AS cancellation_location,
     L.lat_lon                                                           AS cancellation_lat_lon,
     TA.schedule_source                                                  AS schedule_source,
@@ -58,8 +84,7 @@ SELECT /*+ STATE_TTL('TA'='1d') */
     TA.destination_lat_lon                                              AS destination_lat_lon,
     TA.destination_public_arrival_time                                  AS destination_public_arrival_time,
     TA.destination_platform                                             AS destination_platform
-FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
-                      JOIN TRAIN_ACTIVATIONS AS TA ON JSON_VALUE(message, '$.body.train_id') = TA.train_id
-                      LEFT JOIN LOCATIONS_BY_STANOX L ON JSON_VALUE(message, '$.body.loc_stanox') = L.stanox
-                      JOIN CANX_REASON_CODE C  ON JSON_VALUE(message, '$.body.canx_reason_code') = C.canx_reason_code
-WHERE JSON_VALUE(message, '$.header.msg_type') = '0002';
+FROM `TRAIN_CANCELLATION_FROM_JSON` TCFJ
+  JOIN TRAIN_ACTIVATIONS FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS TA ON TCFJ.train_id = TA.train_id
+  LEFT JOIN LOCATIONS_BY_STANOX FOR SYSTEM_TIME AS OF TMFJ.ROWTIME AS L ON TCFJ.loc_stanox = L.stanox
+  JOIN CANX_REASON_CODE C  ON TCFJ.canx_reason_code = C.canx_reason_code;
