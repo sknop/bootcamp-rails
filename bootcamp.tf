@@ -21,3 +21,5 @@ resource "confluent_environment" "rails_environment" {
   }
 }
 
+data "confluent_organization" "bootcamp" {
+}

@@ -19,7 +19,7 @@ resource "confluent_role_binding" "app-tableflow-kafka-cluster-admin" {
 resource "confluent_role_binding" "app-tableflow-integration-provider" {
   principal   = "User:${confluent_service_account.app-tableflow.id}"
   role_name   = "Assigner"
-  crn_pattern = confluent_environment.rails_environment.resource_name
+  crn_pattern = "${data.confluent_organization.bootcamp.resource_name}/environment=${confluent_environment.rails_environment.id}/provider-integration=*"
 }
 
 resource "confluent_api_key" "app-tableflow-api-key" {
