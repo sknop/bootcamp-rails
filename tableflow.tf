@@ -49,7 +49,7 @@ resource "confluent_tableflow_topic" "movement" {
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }
-  display_name = confluent_flink_statement.flink_movements.statement_name
+  display_name = "TRAIN_MOVEMENTS"
   table_formats = ["ICEBERG"]
 
   managed_storage {}
@@ -74,7 +74,7 @@ resource "confluent_tableflow_topic" "cancellation" {
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }
-  display_name = confluent_flink_statement.flink_cancellations.statement_name
+  display_name = "TRAIN_CANCELLATIONS"
   table_formats = ["ICEBERG"]
 
   managed_storage {}
@@ -99,7 +99,7 @@ resource "confluent_tableflow_topic" "reinstatement" {
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }
-  display_name = confluent_flink_statement.flink_reinstatements.statement_name
+  display_name = "TRAIN_REINSTATEMENTS"
   table_formats = ["ICEBERG"]
 
   managed_storage {}
@@ -124,7 +124,7 @@ resource "confluent_tableflow_topic" "train_describers" {
   kafka_cluster {
     id = confluent_kafka_cluster.bootcamp.id
   }
-  display_name = confluent_flink_statement.flink_train_describers.statement_name
+  display_name = "TRAIN_DESCRIBERS"
   table_formats = ["ICEBERG"]
 
   managed_storage {}
