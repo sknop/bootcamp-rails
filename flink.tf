@@ -59,9 +59,6 @@ locals {
   flink_api_secret = confluent_api_key.flink-api-key.secret
 }
 
-data "confluent_organization" "bootcamp" {
-}
-
 resource "confluent_flink_statement" "flink_locations" {
   statement = <<EOT
       CREATE TABLE LOCATIONS (
