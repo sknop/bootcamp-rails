@@ -28,6 +28,8 @@ output "app-tableflow-api-secret" {
   sensitive = true
 }
 
+# The join(", ") is a hack, there should only be one table_format selected or this URL will not be valid
+
 output "tableflow-rest-endpoint" {
   value = "https://tableflow.${confluent_kafka_cluster.bootcamp.region}.aws.confluent.cloud/${join(", ",confluent_tableflow_topic.movement.table_formats)}/catalog/organizations/${data.confluent_organization.bootcamp.id}/environments/${confluent_environment.rails_environment.id}"
 }
