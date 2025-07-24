@@ -29,7 +29,7 @@ output "app-tableflow-api-secret" {
 }
 
 output "tableflow-rest-endpoint" {
-  value = "https://tableflow.${confluent_kafka_cluster.bootcamp.region}.aws.confluent.cloud/${confluent_tableflow_topic.movement.table_formats}/catalog/organizations/${data.confluent_organization.bootcamp.id}/environments/${confluent_environment.rails_environment.id}"
+  value = "https://tableflow.${confluent_kafka_cluster.bootcamp.region}.aws.confluent.cloud/${join(", ",confluent_tableflow_topic.movement.table_formats)}/catalog/organizations/${data.confluent_organization.bootcamp.id}/environments/${confluent_environment.rails_environment.id}"
 }
 
 output "schema-key" {
