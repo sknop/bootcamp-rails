@@ -19,6 +19,19 @@ output "app-manager-api-secret" {
   sensitive = true
 }
 
+output "app-tableflow-api-key" {
+  value = confluent_api_key.app-tableflow-api-key.id
+}
+
+output "app-tableflow-api-secret" {
+  value = confluent_api_key.app-tableflow-api-key.secret
+  sensitive = true
+}
+
+output "tableflow-rest-endpoint" {
+  value = "https://tableflow.${confluent_kafka_cluster.bootcamp.region}.aws.confluent.cloud/${element(confluent_tableflow_topic.movement.table_formats,0)}/catalog/organizations/${data.confluent_organization.bootcamp.id}/environments/${confluent_environment.rails_environment.id}"
+}
+
 output "schema-key" {
   value = local.schema_api_key
 }
