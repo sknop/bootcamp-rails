@@ -9,13 +9,9 @@ CREATE TABLE SCHEDULE (
                                 sleeping_accomodation STRING,
                                 train_category STRING,
                                 origin_tiploc_code STRING,
-                                origin_description STRING,
-                                origin_lat_lon ROW(lat double , lon double),
                                 origin_public_departure_time STRING,
                                 origin_platform STRING,
                                 destination_tiploc_code STRING,
-                                destination_description STRING,
-                                destination_lat_lon ROW(lat double , lon double),
                                 destination_public_arrival_time STRING,
                                 destination_platform STRING,
                                 num_stops INTEGER,
@@ -134,19 +130,10 @@ SELECT
         WHEN JSON_VALUE(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.CIF_train_category' returning STRING) =  'H6' THEN 'Railfreight Distribution (Channel Tunnel): RfD European Channel Tunnel Joint Venture'
         END AS train_category,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[1],'$.tiploc_code') as origin_tiploc_code,
-    T_SRC.description AS origin_description,
-    T_SRC.lat_lon AS origin_lat_lon,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[1],'$.public_departure') as origin_public_departure_time,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[1],'$.platform') as origin_platform,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.tiploc_code') as destination_tiploc_code,
-    T_DST.description AS destination_description,
-    T_DST.lat_lon AS destination_lat_lon,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.public_arrival') as destination_public_arrival_time,
     JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.platform') as destination_platform,
     CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)) AS num_stops
-FROM CIF_FULL_DAILY_SCHEDULE_JSON
-         LEFT JOIN LOCATIONS T_SRC
-                   ON JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[1],'$.tiploc_code') = T_SRC.tiploc
-         LEFT JOIN LOCATIONS T_DST
-                   ON JSON_VALUE(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>)[CARDINALITY(JSON_QUERY(JSON_QUERY(json_schedule,'$.schedule_segment'),'$.schedule_location' returning array<string>))],'$.tiploc_code') = T_DST.tiploc
-;
+FROM CIF_FULL_DAILY_SCHEDULE_JSON;
