@@ -1,5 +1,6 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
+SET 'sql.state-ttl' = '1d';
 CREATE TABLE TRAIN_ACTIVATIONS (
                                    train_id				STRING,
                                    schedule_key      		STRING,
