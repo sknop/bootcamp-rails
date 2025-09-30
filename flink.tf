@@ -334,6 +334,7 @@ resource "confluent_flink_statement" "flink_activations" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "state.ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
