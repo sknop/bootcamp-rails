@@ -57,15 +57,15 @@ AS
     `TRAIN_MOVEMENT_FROM_JSON` AS (
                                       SELECT  COALESCE(JSON_VALUE(message, '$.body.train_id'),'No ID') train_id,
     CONCAT_WS('/',
-              COALESCE(JSON_VALUE(message, '$.body.train_uid'),''),
-    COALESCE(JSON_VALUE(message, '$.body.schedule_start_date'),''),
-    COALESCE(CASE
-             WHEN JSON_VALUE(message, '$.body.schedule_type') = 'O' THEN 'P'
-    WHEN JSON_VALUE(message, '$.body.schedule_type') = 'P' THEN 'O'
-    ELSE JSON_VALUE(message, '$.body.schedule_type')
-    END,
-    '')
-    ) AS schedule_key,
+            COALESCE(JSON_VALUE(message, '$.body.train_uid'),''),
+            COALESCE(JSON_VALUE(message, '$.body.schedule_start_date'),''),
+            COALESCE(CASE
+                        WHEN JSON_VALUE(message, '$.body.schedule_type') = 'O' THEN 'P'
+                        WHEN JSON_VALUE(message, '$.body.schedule_type') = 'P' THEN 'O'
+                        ELSE JSON_VALUE(message, '$.body.schedule_type')
+                        END,
+                    '')
+            ) AS schedule_key,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.header.msg_queue_timestamp') AS BIGINT),3) msg_queue_timestamp,
     JSON_VALUE(message, '$.header.msg_type') msg_type,
     JSON_VALUE(message, '$.header.original_data_source') original_data_source,
@@ -73,9 +73,9 @@ AS
     JSON_VALUE(message, '$.body.schedule_source') schedule_source,
     TO_DATE(JSON_VALUE(message, '$.body.tp_origin_timestamp')) tp_origin_timestamp,
     CASE
-    WHEN JSON_VALUE(message, '$.body.schedule_source') = 'O' THEN 'P'
-    WHEN JSON_VALUE(message, '$.body.schedule_source') = 'P' THEN 'O'
-    ELSE JSON_VALUE(message, '$.body.schedule_source')
+        WHEN JSON_VALUE(message, '$.body.schedule_source') = 'O' THEN 'P'
+        WHEN JSON_VALUE(message, '$.body.schedule_source') = 'P' THEN 'O'
+        ELSE JSON_VALUE(message, '$.body.schedule_source')
     END AS schedule_type,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.creation_timestamp') AS BIGINT),3) creation_timestamp,
     TO_TIMESTAMP_LTZ(CAST(JSON_VALUE(message, '$.body.origin_dep_timestamp') AS BIGINT),3) origin_dep_timestamp,
