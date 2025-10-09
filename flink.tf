@@ -369,6 +369,7 @@ resource "confluent_flink_statement" "flink_movements" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
@@ -403,6 +404,7 @@ resource "confluent_flink_statement" "flink_cancellations" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
@@ -438,6 +440,7 @@ resource "confluent_flink_statement" "flink_reinstatements" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
