@@ -94,7 +94,7 @@ AS
     FROM `TRAIN_MOVEMENT` CROSS JOIN UNNEST(`TEXT`) AS message
     WHERE JSON_VALUE(message, '$.header.msg_type') = '0001'
     )
-SELECT
+SELECT /*+ STATE_TTL('LOC_ORIG'='0s', 'LOC_DEST'='0s', 'TC'='0s') */
     TMFJ.train_id,
     TMFJ.schedule_key,
     TMFJ.msg_queue_timestamp,
