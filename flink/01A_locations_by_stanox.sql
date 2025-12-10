@@ -6,6 +6,7 @@ CREATE TABLE LOCATIONS_BY_STANOX (
                                           lat_lon row(lat double, lon double),
                                           PRIMARY KEY (stanox) NOT ENFORCED
 )
+    DISTRIBUTED INTO 1 BUCKETS
     WITH (
         'changelog.mode' = 'upsert',
         'kafka.cleanup-policy' = 'compact',

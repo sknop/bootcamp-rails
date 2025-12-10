@@ -69,6 +69,7 @@ CREATE TABLE TRAIN_MOVEMENTS (
                                      `destination_public_arrival_time` STRING,
                                      `destination_platform` STRING
 )
+    DISTRIBUTED INTO 1 BUCKETS
     WITH (
         'changelog.mode' = 'append',
         'kafka.cleanup-policy' = 'delete',

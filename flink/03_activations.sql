@@ -44,6 +44,7 @@ CREATE TABLE TRAIN_ACTIVATIONS (
                                    destination_platform            STRING,
                                    PRIMARY KEY (train_id) NOT ENFORCED
 )
+    DISTRIBUTED INTO 1 BUCKETS
     WITH (
         'changelog.mode' = 'upsert',
         'kafka.cleanup-policy' = 'compact',

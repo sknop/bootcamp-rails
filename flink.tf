@@ -75,6 +75,7 @@ resource "confluent_flink_statement" "flink_locations" {
                                        `timing_point_type` STRING,
                                        PRIMARY KEY (`tiploc`) NOT ENFORCED
                                    )
+          DISTRIBUTED INTO 1 BUCKETS
           WITH (
               'changelog.mode' = 'upsert',
               'kafka.cleanup-policy' = 'compact',
@@ -147,6 +148,7 @@ resource "confluent_flink_statement" "flink_cancellation_reasons" {
           `canx_abbrev` STRING NOT NULL,
           CONSTRAINT `PRIMARY` PRIMARY KEY (`canx_reason_code`) NOT ENFORCED
       )
+      DISTRIBUTED INTO 1 BUCKETS
       WITH (
           'changelog.mode' = 'upsert',
           'kafka.cleanup-policy' = 'compact',
@@ -273,6 +275,7 @@ resource "confluent_flink_statement" "flink_tiploc_code" {
                             tps_description STRING,
                             PRIMARY KEY (tiploc_code) NOT ENFORCED
     )
+        DISTRIBUTED INTO 1 BUCKETS
         WITH (
             'changelog.mode' = 'upsert',
             'kafka.cleanup-policy' = 'compact',

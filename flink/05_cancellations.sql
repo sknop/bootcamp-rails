@@ -1,6 +1,7 @@
 -- noinspection SqlNoDataSourceInspectionForFile
 
 CREATE TABLE TRAIN_CANCELLATIONS
+    DISTRIBUTED INTO 1 BUCKETS
     WITH (
         'changelog.mode' = 'append',
         'kafka.cleanup-policy' = 'delete',
