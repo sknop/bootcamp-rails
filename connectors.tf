@@ -229,7 +229,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_TUE" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_MON
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
@@ -268,7 +269,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_WED" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_TUE
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
@@ -307,7 +309,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_THU" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_WED
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
@@ -346,7 +349,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_FRI" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_THU
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
@@ -385,7 +389,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_SAT" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_FRI
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
@@ -424,7 +429,8 @@ resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_SUN" {
     "task.pause.ms" = "300000" # 5 min
   }
   depends_on = [
-    confluent_service_account.app-manager
+    confluent_service_account.app-manager,
+    confluent_connector.NETWORKRAIL_CIF_UPDATE_SAT
   ]
 
   # This is a hack to prevent Terraform from continuously attempting change some parameters
