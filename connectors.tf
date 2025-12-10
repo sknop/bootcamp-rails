@@ -160,3 +160,276 @@ resource "confluent_connector" "NETWORKRAIL_CIF_TOTAL" {
     ignore_changes = [config_nonsensitive]
   }
 }
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_MON" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_MON"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_mon_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_TUE" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_TUE"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_tue_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_WED" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_WED"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_wed_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_THU" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_THU"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_thu_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_FRI" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_FRI"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_fri_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_SAT" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_SAT"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_sat_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}
+
+resource "confluent_connector" "NETWORKRAIL_CIF_UPDATE_SUN" {
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  kafka_cluster {
+    id = confluent_kafka_cluster.bootcamp.id
+  }
+  config_sensitive = {
+    "http.user" = var.nrod_username
+    "http.password" = var.nrod_password
+  }
+  config_nonsensitive = {
+    "name" = "NETWORKRAIL_CIF_UPDATE_SUN"
+    "connector.class" = confluent_custom_connector_plugin.http-compressed-source.connector_class # "io.confluent.bootcamp.connect.http.HttpCompressedSourceConnector"
+    "kafka.auth.mode" = "KAFKA_API_KEY"
+    "kafka.api.key" = confluent_api_key.app-manager-kafka-api-key.id
+    "kafka.api.secret" = confluent_api_key.app-manager-kafka-api-key.secret
+    "kafka.service.account.id" = confluent_service_account.app-manager.id # Does not support Granular API Key access yet
+    "tasks.max" = "1"
+    "confluent.custom.plugin.id" = confluent_custom_connector_plugin.http-compressed-source.id
+    "confluent.connector.type" = "CUSTOM"
+    "confluent.custom.connection.endpoints" = var.confluent_custom_connection_endpoints
+    "value.converter" = "org.apache.kafka.connect.storage.StringConverter"
+    "http.url" = var.cif_update_sun_http_url
+    "topic" = confluent_kafka_topic.CIF_UPDATE_DAILY.topic_name
+    "page.size.lines" = "5000"
+    "task.pause.ms" = "300000" # 5 min
+  }
+  depends_on = [
+    confluent_service_account.app-manager
+  ]
+
+  # This is a hack to prevent Terraform from continuously attempting change some parameters
+  # and hence breaking idempotency
+  lifecycle {
+    ignore_changes = [config_nonsensitive]
+  }
+}

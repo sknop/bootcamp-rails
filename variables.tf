@@ -46,3 +46,31 @@ variable "confluent_custom_connection_endpoints" {
 variable "cif_total_http_url" {
   type = string
 }
+
+variable "cif_update_mon_http_url" {
+  type = string
+}
+
+variable "cif_update_tue_http_url" {
+  type = string
+}
+
+variable "cif_update_wed_http_url" {
+  type = string
+}
+
+variable "cif_update_thu_http_url" {
+  type = string
+}
+
+variable "cif_update_fri_http_url" {
+  type = string
+}
+
+variable "cif_update_sat_http_url" {
+  type = string
+}
+
+variable "cif_update_sun_http_url" {
+  type = string
+}
