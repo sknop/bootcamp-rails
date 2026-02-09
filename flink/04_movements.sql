@@ -74,6 +74,7 @@ CREATE TABLE TRAIN_MOVEMENTS (
         'changelog.mode' = 'append',
         'kafka.cleanup-policy' = 'delete',
         'kafka.retention.time' = '7 days'
+        'kafka.consumer.isolation-level' = 'read-uncommitted'
         )
 AS
     WITH
