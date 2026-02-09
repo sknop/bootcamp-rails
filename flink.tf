@@ -373,7 +373,6 @@ resource "confluent_flink_statement" "flink_movements" {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
     "sql.state-ttl" = "1d"
-    "execution.checkpointing.interval" = "5000"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
