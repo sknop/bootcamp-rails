@@ -205,6 +205,7 @@ resource "confluent_flink_statement" "flink_locations_by_stanox" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "sql.tables.scan.bounded.mode" = "latest-offset"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
