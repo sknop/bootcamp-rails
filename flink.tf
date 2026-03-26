@@ -373,7 +373,6 @@ resource "confluent_flink_statement" "flink_movements" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
-    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
@@ -408,7 +407,6 @@ resource "confluent_flink_statement" "flink_cancellations" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
-    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
@@ -444,7 +442,6 @@ resource "confluent_flink_statement" "flink_reinstatements" {
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
     "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
-    "sql.state-ttl" = "1d"
   }
 
   rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
@@ -472,8 +469,45 @@ resource "confluent_flink_statement" "flink_reinstatements" {
   ]
 }
 
+resource "confluent_flink_statement" "flink_execution_set" {
+  statement = file("flink/07_execution_set.sql")
+  statement_name = "execution_set_train_movement"
+
+  properties = {
+    "sql.current-catalog"  = confluent_environment.rails_environment.display_name
+    "sql.current-database" = confluent_kafka_cluster.bootcamp.display_name
+    "sql.state-ttl" = "1d"
+  }
+
+  rest_endpoint = data.confluent_flink_region.rails_pool_region.rest_endpoint
+
+  organization {
+    id = data.confluent_organization.bootcamp.id
+  }
+  environment {
+    id = confluent_environment.rails_environment.id
+  }
+  compute_pool {
+    id = confluent_flink_compute_pool.main.id
+  }
+  principal {
+    id = confluent_service_account.app-flink.id
+  }
+  credentials {
+    key    = confluent_api_key.flink-api-key.id
+    secret = confluent_api_key.flink-api-key.secret
+  }
+
+  depends_on = [
+    confluent_flink_statement.flink_activations,
+    confluent_flink_statement.flink_movements,
+    confluent_flink_statement.flink_cancellations,
+    confluent_flink_statement.flink_reinstatements
+  ]
+}
+
 resource "confluent_flink_statement" "flink_train_describers" {
-  statement = file("flink/07_train_describers.sql")
+  statement = file("flink/08_train_describers.sql")
   statement_name = "create-table-train-describers"
 
   properties = {
