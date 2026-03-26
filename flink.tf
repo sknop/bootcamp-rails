@@ -471,7 +471,7 @@ resource "confluent_flink_statement" "flink_reinstatements" {
 
 resource "confluent_flink_statement" "flink_execution_set" {
   statement = file("flink/07_execution_set.sql")
-  statement_name = "execution_set_train_movement"
+  statement_name = "execution-set-train-movement"
 
   properties = {
     "sql.current-catalog"  = confluent_environment.rails_environment.display_name
