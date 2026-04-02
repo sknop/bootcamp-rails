@@ -21,6 +21,11 @@ This is a terraform script that will
 
 ### Preparation
 
+You will need 
+
+- Terraform (I use version 1.14.8)
+- Java 21 or higher
+
 Add a `terraform.tfvars` file with target locations and credentials. 
 
 Add
